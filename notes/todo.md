@@ -12,8 +12,8 @@ Development
     [ ] Array initialisation
         [X] Lexing
         [X] Parsing
-        [ ] Symgen
-        [ ] Without initial value
+        [X] Symgen
+        [X] Without initial value
         [ ] With initial value
     [ ] Array invokation
         [ ] Lexing and parsing

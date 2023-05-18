@@ -10,6 +10,7 @@ varSymTable globalVarTable;
 funcSymTable funcTable;
 char *to_lower(char *str);
 int varlookup(char *var);
+int arr_symgen(char *var, int size);
 
 static int lbl;
 
@@ -42,7 +43,7 @@ int ex(nodeType *p)
         switch (p->opr.oper)
         {
         case ARRAY:
-            printf("Code gen for arr!");
+            arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]->con.intValue);
             break;
         case FOR:
             ex(p->opr.op[0]);
@@ -198,4 +199,20 @@ int varlookup(char *var) {
     globalVarTable.count++;
     globalVarTable.width++;
     return globalVarTable.width - 1;
+}
+
+int arr_symgen(char *var, int size) {
+    char *loweredVar = to_lower(var);
+    for (int i = 0; i < globalVarTable.count; i++) {
+        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
+            printf("Error: array \"%s\" already declared\n", var);
+            exit(1);
+        }
+    }
+    // TODO: ndim and dims when we support multidimensional arrays
+    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
+    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
+    globalVarTable.count++;
+    globalVarTable.width += size;
+    return globalVarTable.width - size;
 }
