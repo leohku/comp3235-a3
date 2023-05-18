@@ -5,6 +5,7 @@ Exploration
 Development
 ---
 [X] Build symbol table structure
+[X] Migrate old symbol table
 
 [ ] Single dimension array (40%)
 [ ] Multi-dimension array (10%)

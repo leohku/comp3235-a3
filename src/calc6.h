@@ -10,19 +10,21 @@ typedef struct {
 } varSymEntry;
 
 typedef struct {
-    int width;
-    varSymEntry* variables;
+    int width;                  /* width of variables */
+    int count;                  /* number of variables */
+    varSymEntry variables[100]; /* array of variables, max 100 */
 } varSymTable;
 
 /* function symtable */
 typedef struct {
     char* symbol;
-    varSymTable* argtable;
-    varSymTable* vartable;
+    varSymTable argtable;
+    varSymTable vartable;
 } funcSymEntry;
 
 typedef struct {
-    funcSymEntry* functions;
+    int count;                      /* number of functions */
+    funcSymEntry functions[100];    /* array of functions, max 100 */
 } funcSymTable;
 
 /* constants */
@@ -60,8 +62,6 @@ typedef struct nodeTypeTag {
 extern char* remove_first_last_char(char* str);
 extern char* to_lower(char* str);
 extern int get_symtable_ind(char* str);
-extern char* symtable[100];
-extern int symtable_size;
 
 extern varSymTable globalVarTable;
 extern varSymTable localVarTable;

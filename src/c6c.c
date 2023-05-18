@@ -4,7 +4,6 @@
 
 /* symbol tables */
 varSymTable globalVarTable;
-varSymTable localVarTable;
 funcSymTable funcTable;
 
 static int lbl;

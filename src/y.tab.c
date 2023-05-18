@@ -1871,6 +1871,13 @@ int main(int argc, char **argv) {
 extern FILE* yyin;
     yyin = fopen(argv[1], "r");
 
+    // Global variable table initialisation
+    globalVarTable.count = 0;
+    globalVarTable.width = 0;
+
+    // Function table initialisation
+    funcTable.count = 0;
+
     // Stack pointer initialisation hack
     printf("\tpush\tsp\n");
     printf("\tpush\t100\n");

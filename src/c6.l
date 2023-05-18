@@ -10,8 +10,6 @@ void yyerror(char *);
 char* remove_first_last_char(char* str);
 char* to_lower(char* str);
 int get_symtable_ind(char* str);
-char* symtable[100];
-int symtable_size = 0;
 %}
 
 %%
@@ -100,11 +98,14 @@ char *to_lower(char *str) {
 
 int get_symtable_ind(char *var) {
     char *loweredVar = to_lower(var);
-    for (int i = 0; i < symtable_size; i++) {
-        if (strcmp(symtable[i], loweredVar) == 0) {
+    for (int i = 0; i < globalVarTable.count; i++) {
+        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
             return i;
         }
     }
-    symtable[symtable_size++] = loweredVar;
-    return symtable_size - 1;
+    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
+    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
+    globalVarTable.count++;
+    globalVarTable.width++;
+    return globalVarTable.width - 1;
 }
