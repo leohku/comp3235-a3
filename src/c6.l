@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include "calc6.h"
 #include "y.tab.h"
 void yyerror(char *);
 
 char* remove_first_last_char(char* str);
-char* to_lower(char* str);
-int get_symtable_ind(char* str);
+char* null_terminate(char* str);
 %}
 
 %%
@@ -30,7 +28,7 @@ int get_symtable_ind(char* str);
 "array"         return ARRAY;
 
 [a-zA-Z][a-zA-Z0-9]{0,19}       { 
-                                    yylval.sIndex = get_symtable_ind(yytext);
+                                    yylval.sValue = null_terminate(yytext);
                                     return VARIABLE;
                                 }
 
@@ -87,26 +85,10 @@ char* remove_first_last_char(char* str) {
     return new_str;
 }
 
-char *to_lower(char *str) {
-    int len = strlen(str);
-    char *new_str = malloc(len + 1);
-    for (int i = 0; i < len; i++) {
-        new_str[i] = tolower(str[i]);
-    }
+char* null_terminate(char* str) {
+    size_t len = strlen(str);
+    char* new_str = malloc(len + 1);
+    strncpy(new_str, str, len);
     new_str[len] = '\0';
     return new_str;
-}
-
-int get_symtable_ind(char *var) {
-    char *loweredVar = to_lower(var);
-    for (int i = 0; i < globalVarTable.count; i++) {
-        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
-            return i;
-        }
-    }
-    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
-    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
-    globalVarTable.count++;
-    globalVarTable.width++;
-    return globalVarTable.width - 1;
 }

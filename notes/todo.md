@@ -6,7 +6,7 @@ Development
 ---
 [X] Build symbol table structure
 [X] Migrate old symbol table
-[ ] Move symbol table to parser
+[X] Move symbol table to parser
 
 [ ] Single dimension array (40%)
     [ ] Array initialisation

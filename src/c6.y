@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
 #include "calc6.h"
 
 
 /* prototypes */
 nodeType *opr(int oper, int nops, ...);
-nodeType *id(int i);
+nodeType *id(char *value);
 nodeType *conInt(int value);
 nodeType *conChar(char value);
 nodeType *conString(char *value);
@@ -15,20 +17,21 @@ void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
 void yyerror(char *s);
+char *to_lower(char *str);
+int get_symtable_ind(char *var);
 %}
 
 %union {
     int iValue;                 /* integer value */
     char cValue;                /* character value */
     char *sValue;               /* string value */
-    int sIndex;                 /* symbol table index */
     nodeType *nPtr;             /* node pointer */
 };
 
 %token <iValue> INTEGER
 %token <cValue> CHARACTER
 %token <sValue> STRING
-%token <sIndex> VARIABLE
+%token <sValue> VARIABLE
 %token FOR WHILE IF GETI GETC GETS PUTI PUTI_ PUTC PUTC_ PUTS PUTS_
 %token ARRAY
 %nonassoc IFX
@@ -157,7 +160,7 @@ nodeType *conString(char *value) {
     return p;
 }
 
-nodeType *id(int i) {
+nodeType *id(char *value) {
     nodeType *p;
     size_t nodeSize;
 
@@ -168,7 +171,7 @@ nodeType *id(int i) {
 
     /* copy information */
     p->type = typeId;
-    p->id.i = i;
+    p->id.i = get_symtable_ind(value);
 
     return p;
 }
@@ -209,6 +212,30 @@ void freeNode(nodeType *p) {
 
 void yyerror(char *s) {
     fprintf(stdout, "%s\n", s);
+}
+
+char *to_lower(char *str) {
+    int len = strlen(str);
+    char *new_str = malloc(len + 1);
+    for (int i = 0; i < len; i++) {
+        new_str[i] = tolower(str[i]);
+    }
+    new_str[len] = '\0';
+    return new_str;
+}
+
+int get_symtable_ind(char *var) {
+    char *loweredVar = to_lower(var);
+    for (int i = 0; i < globalVarTable.count; i++) {
+        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
+            return i;
+        }
+    }
+    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
+    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
+    globalVarTable.count++;
+    globalVarTable.width++;
+    return globalVarTable.width - 1;
 }
 
 int main(int argc, char **argv) {
