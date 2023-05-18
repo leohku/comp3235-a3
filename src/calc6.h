@@ -37,7 +37,7 @@ typedef struct {
 
 /* identifiers */
 typedef struct {
-    int i;                      /* subscript to sym array */
+    char* name;                      /* variable name */
 } idNodeType;
 
 /* operators */
@@ -58,10 +58,6 @@ typedef struct nodeTypeTag {
         oprNodeType opr;        /* operators */
     };
 } nodeType;
-
-extern char* remove_first_last_char(char* str);
-extern char* to_lower(char* str);
-extern int get_symtable_ind(char* str);
 
 extern varSymTable globalVarTable;
 extern varSymTable localVarTable;

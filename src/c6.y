@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
 #include "calc6.h"
 
 
@@ -17,8 +15,6 @@ void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
 void yyerror(char *s);
-char *to_lower(char *str);
-int get_symtable_ind(char *var);
 %}
 
 %union {
@@ -70,7 +66,7 @@ stmt:
         | PUTS '(' expr ')' ';'		                { $$ = opr(PUTS, 1, $3); }
         | PUTS_ '(' expr ')' ';'		            { $$ = opr(PUTS_, 1, $3); }
         | VARIABLE '=' expr ';'                     { $$ = opr('=', 2, id($1), $3); }
-        | ARRAY STRING '[' INTEGER ']' ';'          { $$ = opr(ARRAY, 2, conString($2), conInt($4)); }
+        | ARRAY VARIABLE '[' INTEGER ']' ';'        { $$ = opr(ARRAY, 2, id($2), conInt($4)); }
 	    | FOR '(' stmt stmt stmt ')' stmt           { $$ = opr(FOR, 4, $3, $4, $5, $7); }
         | WHILE '(' expr ')' stmt                   { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX            { $$ = opr(IF, 2, $3, $5); }
@@ -171,7 +167,7 @@ nodeType *id(char *value) {
 
     /* copy information */
     p->type = typeId;
-    p->id.i = get_symtable_ind(value);
+    p->id.name = value;
 
     return p;
 }
@@ -212,30 +208,6 @@ void freeNode(nodeType *p) {
 
 void yyerror(char *s) {
     fprintf(stdout, "%s\n", s);
-}
-
-char *to_lower(char *str) {
-    int len = strlen(str);
-    char *new_str = malloc(len + 1);
-    for (int i = 0; i < len; i++) {
-        new_str[i] = tolower(str[i]);
-    }
-    new_str[len] = '\0';
-    return new_str;
-}
-
-int get_symtable_ind(char *var) {
-    char *loweredVar = to_lower(var);
-    for (int i = 0; i < globalVarTable.count; i++) {
-        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
-            return i;
-        }
-    }
-    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
-    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
-    globalVarTable.count++;
-    globalVarTable.width++;
-    return globalVarTable.width - 1;
 }
 
 int main(int argc, char **argv) {

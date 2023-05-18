@@ -6,13 +6,13 @@ Development
 ---
 [X] Build symbol table structure
 [X] Migrate old symbol table
-[X] Move decl-when-use symgen to parser
-[ ] Move array symgen to codegen
+[X] Move var symgen to codegen
 
 [ ] Single dimension array (40%)
     [ ] Array initialisation
         [X] Lexing
-        [ ] Parsing
+        [X] Parsing
+        [ ] Symgen
         [ ] Without initial value
         [ ] With initial value
     [ ] Array invokation

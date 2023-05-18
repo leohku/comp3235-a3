@@ -1,10 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "calc6.h"
 #include "y.tab.h"
 
 /* symbol tables */
 varSymTable globalVarTable;
 funcSymTable funcTable;
+char *to_lower(char *str);
+int varlookup(char *var);
 
 static int lbl;
 
@@ -31,13 +36,14 @@ int ex(nodeType *p)
         }
         break;
     case typeId:
-        printf("\tpush\tsb[%d]\n", p->id.i);
+        printf("\tpush\tsb[%d]\n", varlookup(p->id.name));
         break;
     case typeOpr:
         switch (p->opr.oper)
         {
         case ARRAY:
             printf("Code gen for arr!");
+            break;
         case FOR:
             ex(p->opr.op[0]);
             printf("L%03d:\n", lblx = lbl++);
@@ -78,15 +84,15 @@ int ex(nodeType *p)
             break;
         case GETI:
             printf("\tgeti\n");
-            printf("\tpop\tsb[%d]\n", p->opr.op[0]->id.i);
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
             break;
         case GETC:
             printf("\tgetc\n");
-            printf("\tpop\tsb[%d]\n", p->opr.op[0]->id.i);
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
             break;
         case GETS:
             printf("\tgets\n");
-            printf("\tpop\tsb[%d]\n", p->opr.op[0]->id.i);
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
             break;
         case PUTI:
             ex(p->opr.op[0]);
@@ -114,7 +120,7 @@ int ex(nodeType *p)
             break;
         case '=':
             ex(p->opr.op[1]);
-            printf("\tpop\tsb[%d]\n", p->opr.op[0]->id.i);
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
             break;
         case UMINUS:
             ex(p->opr.op[0]);
@@ -168,4 +174,28 @@ int ex(nodeType *p)
         }
     }
     return 0;
+}
+
+char *to_lower(char *str) {
+    int len = strlen(str);
+    char *new_str = malloc(len + 1);
+    for (int i = 0; i < len; i++) {
+        new_str[i] = tolower(str[i]);
+    }
+    new_str[len] = '\0';
+    return new_str;
+}
+
+int varlookup(char *var) {
+    char *loweredVar = to_lower(var);
+    for (int i = 0; i < globalVarTable.count; i++) {
+        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
+            return i;
+        }
+    }
+    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
+    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
+    globalVarTable.count++;
+    globalVarTable.width++;
+    return globalVarTable.width - 1;
 }
