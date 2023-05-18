@@ -70,7 +70,7 @@ stmt:
         | PUTS '(' expr ')' ';'		                { $$ = opr(PUTS, 1, $3); }
         | PUTS_ '(' expr ')' ';'		            { $$ = opr(PUTS_, 1, $3); }
         | VARIABLE '=' expr ';'                     { $$ = opr('=', 2, id($1), $3); }
-        /* | ARRAY VARIABLE '[' INTEGER ']' ';'        { $$ = opr(ARRAY, 0); } */
+        | ARRAY STRING '[' INTEGER ']' ';'          { $$ = opr(ARRAY, 2, conString($2), conInt($4)); }
 	    | FOR '(' stmt stmt stmt ')' stmt           { $$ = opr(FOR, 4, $3, $4, $5, $7); }
         | WHILE '(' expr ')' stmt                   { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX            { $$ = opr(IF, 2, $3, $5); }

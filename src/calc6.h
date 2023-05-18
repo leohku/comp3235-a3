@@ -6,7 +6,7 @@ typedef struct {
     char* symbol;
     int ndim;
     int offset;
-    int* dims;
+    int dims[10];
 } varSymEntry;
 
 typedef struct {

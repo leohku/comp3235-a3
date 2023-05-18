@@ -6,7 +6,8 @@ Development
 ---
 [X] Build symbol table structure
 [X] Migrate old symbol table
-[X] Move symbol table to parser
+[X] Move decl-when-use symgen to parser
+[ ] Move array symgen to codegen
 
 [ ] Single dimension array (40%)
     [ ] Array initialisation

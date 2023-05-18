@@ -36,6 +36,8 @@ int ex(nodeType *p)
     case typeOpr:
         switch (p->opr.oper)
         {
+        case ARRAY:
+            printf("Code gen for arr!");
         case FOR:
             ex(p->opr.op[0]);
             printf("L%03d:\n", lblx = lbl++);
