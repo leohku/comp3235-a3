@@ -14,9 +14,7 @@ nodeType *conString(char *value);
 void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
-
 void yyerror(char *s);
-int sym[26];                    /* symbol table */
 %}
 
 %union {

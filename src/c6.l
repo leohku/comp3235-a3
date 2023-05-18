@@ -6,10 +6,6 @@
 #include "calc6.h"
 #include "y.tab.h"
 void yyerror(char *);
-char* remove_first_last_char(char* str);
-char* to_lower(char* str);
-int get_symtable_ind(char* str);
-char* symtable[100];
 int symtable_size = 0;
 %}
 

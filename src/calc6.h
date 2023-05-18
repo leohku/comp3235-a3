@@ -1,6 +1,12 @@
 typedef enum { typeCon, typeId, typeOpr } nodeEnum;
 typedef enum { conTypeInt, conTypeChar, conTypeString } conTypeEnum;
 
+char* remove_first_last_char(char* str);
+char* to_lower(char* str);
+int get_symtable_ind(char* str);
+char* symtable[100];
+int symtable_size;
+
 /* constants */
 typedef struct {
     conTypeEnum conType;
@@ -32,5 +38,3 @@ typedef struct nodeTypeTag {
         oprNodeType opr;        /* operators */
     };
 } nodeType;
-
-extern int sym[26];
