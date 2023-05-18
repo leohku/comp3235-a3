@@ -44,6 +44,15 @@ int ex(nodeType *p)
         {
         case ARRAY:
             arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]->con.intValue);
+            if (p->opr.nops == 3) {
+                ex(p->opr.op[2]);                               /* Prepare the expression value */
+                printf("\tpop ac\n");
+                int base = varlookup(p->opr.op[0]->id.name);    /* Compute base pointer */
+                for (int i = 0; i < p->opr.op[1]->con.intValue; i++) {
+                    printf("\tpush ac\n");
+                    printf("\tpop sb[%i]\n", base + i);
+                }
+            }
             break;
         case FOR:
             ex(p->opr.op[0]);
@@ -191,7 +200,7 @@ int varlookup(char *var) {
     char *loweredVar = to_lower(var);
     for (int i = 0; i < globalVarTable.count; i++) {
         if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
-            return i;
+            return globalVarTable.variables[i].offset;
         }
     }
     globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
