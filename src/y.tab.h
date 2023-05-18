@@ -70,15 +70,16 @@ extern int yydebug;
     PUTC_ = 271,                   /* PUTC_  */
     PUTS = 272,                    /* PUTS  */
     PUTS_ = 273,                   /* PUTS_  */
-    IFX = 274,                     /* IFX  */
-    ELSE = 275,                    /* ELSE  */
-    AND = 276,                     /* AND  */
-    OR = 277,                      /* OR  */
-    GE = 278,                      /* GE  */
-    LE = 279,                      /* LE  */
-    EQ = 280,                      /* EQ  */
-    NE = 281,                      /* NE  */
-    UMINUS = 282                   /* UMINUS  */
+    ARRAY = 274,                   /* ARRAY  */
+    IFX = 275,                     /* IFX  */
+    ELSE = 276,                    /* ELSE  */
+    AND = 277,                     /* AND  */
+    OR = 278,                      /* OR  */
+    GE = 279,                      /* GE  */
+    LE = 280,                      /* LE  */
+    EQ = 281,                      /* EQ  */
+    NE = 282,                      /* NE  */
+    UMINUS = 283                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -103,15 +104,16 @@ extern int yydebug;
 #define PUTC_ 271
 #define PUTS 272
 #define PUTS_ 273
-#define IFX 274
-#define ELSE 275
-#define AND 276
-#define OR 277
-#define GE 278
-#define LE 279
-#define EQ 280
-#define NE 281
-#define UMINUS 282
+#define ARRAY 274
+#define IFX 275
+#define ELSE 276
+#define AND 277
+#define OR 278
+#define GE 279
+#define LE 280
+#define EQ 281
+#define NE 282
+#define UMINUS 283
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -125,7 +127,7 @@ union YYSTYPE
     int sIndex;                 /* symbol table index */
     nodeType *nPtr;             /* node pointer */
 
-#line 129 "y.tab.h"
+#line 131 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

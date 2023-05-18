@@ -27,6 +27,7 @@ int get_symtable_ind(char* str);
 "putc_"         return PUTC_;
 "puts"          return PUTS;
 "puts_"         return PUTS_;
+"array"         return ARRAY;
 
 [a-zA-Z][a-zA-Z0-9]{0,19}       { 
                                     yylval.sIndex = get_symtable_ind(yytext);
@@ -54,7 +55,7 @@ int get_symtable_ind(char* str);
                 return INTEGER;
             }
 
-[-()<>=+*/;{}.%] {
+[-()<>=+*/;{}\[\].%] {
                 return *yytext;
              }
 

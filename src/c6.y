@@ -30,6 +30,7 @@ void yyerror(char *s);
 %token <sValue> STRING
 %token <sIndex> VARIABLE
 %token FOR WHILE IF GETI GETC GETS PUTI PUTI_ PUTC PUTC_ PUTS PUTS_
+%token ARRAY
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -54,23 +55,24 @@ function:
         ;
 
 stmt:
-          ';'                            { $$ = opr(';', 2, NULL, NULL); }
-        | expr ';'                       { $$ = $1; }
-	    | GETI '(' VARIABLE ')' ';'		 { $$ = opr(GETI, 1, id($3)); }
-        | GETC '(' VARIABLE ')' ';'		 { $$ = opr(GETC, 1, id($3)); }
-        | GETS '(' VARIABLE ')' ';'		 { $$ = opr(GETS, 1, id($3)); }
-        | PUTI '(' expr ')' ';'		     { $$ = opr(PUTI, 1, $3); }
-        | PUTI_ '(' expr ')' ';'		 { $$ = opr(PUTI_, 1, $3); }
-        | PUTC '(' expr ')' ';'		     { $$ = opr(PUTC, 1, $3); }
-        | PUTC_ '(' expr ')' ';'		 { $$ = opr(PUTC_, 1, $3); }
-        | PUTS '(' expr ')' ';'		     { $$ = opr(PUTS, 1, $3); }
-        | PUTS_ '(' expr ')' ';'		 { $$ = opr(PUTS_, 1, $3); }
-        | VARIABLE '=' expr ';'          { $$ = opr('=', 2, id($1), $3); }
-	    | FOR '(' stmt stmt stmt ')' stmt { $$ = opr(FOR, 4, $3, $4, $5, $7); }
-        | WHILE '(' expr ')' stmt        { $$ = opr(WHILE, 2, $3, $5); }
-        | IF '(' expr ')' stmt %prec IFX { $$ = opr(IF, 2, $3, $5); }
-        | IF '(' expr ')' stmt ELSE stmt { $$ = opr(IF, 3, $3, $5, $7); }
-        | '{' stmt_list '}'              { $$ = $2; }
+          ';'                                       { $$ = opr(';', 2, NULL, NULL); }
+        | expr ';'                                  { $$ = $1; }
+	    | GETI '(' VARIABLE ')' ';'		            { $$ = opr(GETI, 1, id($3)); }
+        | GETC '(' VARIABLE ')' ';'		            { $$ = opr(GETC, 1, id($3)); }
+        | GETS '(' VARIABLE ')' ';'		            { $$ = opr(GETS, 1, id($3)); }
+        | PUTI '(' expr ')' ';'		                { $$ = opr(PUTI, 1, $3); }
+        | PUTI_ '(' expr ')' ';'		            { $$ = opr(PUTI_, 1, $3); }
+        | PUTC '(' expr ')' ';'		                { $$ = opr(PUTC, 1, $3); }
+        | PUTC_ '(' expr ')' ';'		            { $$ = opr(PUTC_, 1, $3); }
+        | PUTS '(' expr ')' ';'		                { $$ = opr(PUTS, 1, $3); }
+        | PUTS_ '(' expr ')' ';'		            { $$ = opr(PUTS_, 1, $3); }
+        | VARIABLE '=' expr ';'                     { $$ = opr('=', 2, id($1), $3); }
+        /* | ARRAY VARIABLE '[' INTEGER ']' ';'        { $$ = opr(ARRAY, 0); } */
+	    | FOR '(' stmt stmt stmt ')' stmt           { $$ = opr(FOR, 4, $3, $4, $5, $7); }
+        | WHILE '(' expr ')' stmt                   { $$ = opr(WHILE, 2, $3, $5); }
+        | IF '(' expr ')' stmt %prec IFX            { $$ = opr(IF, 2, $3, $5); }
+        | IF '(' expr ')' stmt ELSE stmt            { $$ = opr(IF, 3, $3, $5, $7); }
+        | '{' stmt_list '}'                         { $$ = $2; }
         ;
 
 stmt_list:
@@ -222,7 +224,7 @@ extern FILE* yyin;
 
     // Stack pointer initialisation hack
     printf("\tpush\tsp\n");
-    printf("\tpush\t100\n");
+    printf("\tpush\t10000\n");
     printf("\tadd\n");
     printf("\tpop\tsp\n");
 
