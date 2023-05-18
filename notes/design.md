@@ -28,7 +28,8 @@ Global function table
 ```
 [{
     symbol: "<sym>",
-    vartable: LocalVarTable
+    argtable: ArgVarTable
+    localtable: LocalVarTable
 }]
 ```
 LocalVarTable.width is used for informing the second var argument (# of local variables)

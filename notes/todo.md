@@ -4,7 +4,7 @@ Exploration
 
 Development
 ---
-[ ] Build symbol table structure
+[X] Build symbol table structure
 
 [ ] Single dimension array (40%)
 [ ] Multi-dimension array (10%)

@@ -7,6 +7,26 @@ int get_symtable_ind(char* str);
 char* symtable[100];
 int symtable_size;
 
+/* variable symtable */
+typedef struct {
+    char* symbol;
+    int ndim;
+    int offset;
+    int* dims;
+} varSymEntry;
+
+typedef struct {
+    int width;
+    varSymEntry* variables;
+} varSymTable;
+
+/* function symtable */
+typedef struct {
+    char* symbol;
+    varSymTable* argtable;
+    varSymTable* vartable;
+} funcSymEntry;
+
 /* constants */
 typedef struct {
     conTypeEnum conType;
