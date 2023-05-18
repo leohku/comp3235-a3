@@ -507,9 +507,14 @@ char *yytext;
 #include "calc6.h"
 #include "y.tab.h"
 void yyerror(char *);
+
+char* remove_first_last_char(char* str);
+char* to_lower(char* str);
+int get_symtable_ind(char* str);
+char* symtable[100];
 int symtable_size = 0;
-#line 511 "lex.yy.c"
-#line 512 "lex.yy.c"
+#line 516 "lex.yy.c"
+#line 517 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -726,10 +731,10 @@ YY_DECL
 		}
 
 	{
-#line 12 "c6.l"
+#line 17 "c6.l"
 
 
-#line 732 "lex.yy.c"
+#line 737 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -788,72 +793,72 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 14 "c6.l"
+#line 19 "c6.l"
 return FOR;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 15 "c6.l"
+#line 20 "c6.l"
 return WHILE;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 16 "c6.l"
+#line 21 "c6.l"
 return IF;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 17 "c6.l"
+#line 22 "c6.l"
 return ELSE;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 18 "c6.l"
+#line 23 "c6.l"
 return GETI;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 19 "c6.l"
+#line 24 "c6.l"
 return GETC;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 20 "c6.l"
+#line 25 "c6.l"
 return GETS;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 21 "c6.l"
+#line 26 "c6.l"
 return PUTI;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 22 "c6.l"
+#line 27 "c6.l"
 return PUTI_;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 23 "c6.l"
+#line 28 "c6.l"
 return PUTC;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 24 "c6.l"
+#line 29 "c6.l"
 return PUTC_;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 25 "c6.l"
+#line 30 "c6.l"
 return PUTS;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 26 "c6.l"
+#line 31 "c6.l"
 return PUTS_;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 28 "c6.l"
+#line 33 "c6.l"
 { 
                                     yylval.sIndex = get_symtable_ind(yytext);
                                     return VARIABLE;
@@ -861,7 +866,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 33 "c6.l"
+#line 38 "c6.l"
 {
                 yylval.cValue = yytext[1];  // Get match inside ''
                 return CHARACTER;
@@ -869,7 +874,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 38 "c6.l"
+#line 43 "c6.l"
 {
                 char *yytextTrimmed = remove_first_last_char(yytext);
                 yylval.sValue = yytextTrimmed;
@@ -878,7 +883,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 44 "c6.l"
+#line 49 "c6.l"
 {
                 yylval.iValue = atoi(yytext);
                 return INTEGER;
@@ -886,7 +891,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 49 "c6.l"
+#line 54 "c6.l"
 {
                 yylval.iValue = atoi(yytext);
                 return INTEGER;
@@ -894,64 +899,64 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 54 "c6.l"
+#line 59 "c6.l"
 {
                 return *yytext;
              }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 58 "c6.l"
+#line 63 "c6.l"
 return GE;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 59 "c6.l"
+#line 64 "c6.l"
 return LE;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 60 "c6.l"
+#line 65 "c6.l"
 return EQ;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 61 "c6.l"
+#line 66 "c6.l"
 return NE;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 62 "c6.l"
+#line 67 "c6.l"
 return AND;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 63 "c6.l"
+#line 68 "c6.l"
 return OR;
 	YY_BREAK
 case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
-#line 65 "c6.l"
+#line 70 "c6.l"
 ;	/* skip comments */
 	YY_BREAK
 case 27:
 /* rule 27 can match eol */
 YY_RULE_SETUP
-#line 67 "c6.l"
+#line 72 "c6.l"
 ;       /* ignore whitespace */
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 69 "c6.l"
+#line 74 "c6.l"
 yyerror("Unknown character");
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 70 "c6.l"
+#line 75 "c6.l"
 ECHO;
 	YY_BREAK
-#line 954 "lex.yy.c"
+#line 959 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1956,7 +1961,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 70 "c6.l"
+#line 75 "c6.l"
 
 int yywrap(void) {
     return 1;

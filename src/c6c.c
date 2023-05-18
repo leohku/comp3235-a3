@@ -2,6 +2,11 @@
 #include "calc6.h"
 #include "y.tab.h"
 
+/* symbol tables */
+varSymTable globalVarTable;
+varSymTable localVarTable;
+funcSymTable funcTable;
+
 static int lbl;
 
 int ex(nodeType *p)

@@ -1,12 +1,6 @@
 typedef enum { typeCon, typeId, typeOpr } nodeEnum;
 typedef enum { conTypeInt, conTypeChar, conTypeString } conTypeEnum;
 
-char* remove_first_last_char(char* str);
-char* to_lower(char* str);
-int get_symtable_ind(char* str);
-char* symtable[100];
-int symtable_size;
-
 /* variable symtable */
 typedef struct {
     char* symbol;
@@ -26,6 +20,10 @@ typedef struct {
     varSymTable* argtable;
     varSymTable* vartable;
 } funcSymEntry;
+
+typedef struct {
+    funcSymEntry* functions;
+} funcSymTable;
 
 /* constants */
 typedef struct {
@@ -58,3 +56,13 @@ typedef struct nodeTypeTag {
         oprNodeType opr;        /* operators */
     };
 } nodeType;
+
+extern char* remove_first_last_char(char* str);
+extern char* to_lower(char* str);
+extern int get_symtable_ind(char* str);
+extern char* symtable[100];
+extern int symtable_size;
+
+extern varSymTable globalVarTable;
+extern varSymTable localVarTable;
+extern funcSymTable funcTable;
