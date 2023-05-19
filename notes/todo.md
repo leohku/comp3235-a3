@@ -21,7 +21,7 @@ Development
         [X] Symlookup
         [X] Assignment (pop)
         [X] Use (push)
-[ ] Multi-dimension array (10%)
+[X] Multi-dimension array (10%)
     [X] Array initialisation
         [X] Parsing
         [X] Introducing ari()
