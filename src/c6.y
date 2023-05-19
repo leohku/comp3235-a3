@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include "calc6.h"
 
 
 /* prototypes */
+nodeType *ari(nodeType *prev, int value);
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(char *value);
 nodeType *ida(char *value, nodeType *op);
@@ -41,7 +43,7 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl
+%type <nPtr> stmt stmt_list expr array_decl int_list
 
 %%
 
@@ -104,13 +106,45 @@ expr:
         | '(' expr ')'          { $$ = $2; }
         ;
 
-array_decl: ARRAY VARIABLE '[' INTEGER ']'            { $$ = opr(ARRAY, 2, id($2), conInt($4)); }
-        | ARRAY VARIABLE '[' INTEGER ']' '=' expr   { $$ = opr(ARRAY, 3, id($2), conInt($4), $7); }
+array_decl: ARRAY VARIABLE '[' int_list ']'            { $$ = opr(ARRAY, 2, id($2), $4); }
+        | ARRAY VARIABLE '[' int_list ']' '=' expr   { $$ = opr(ARRAY, 3, id($2), $4, $7); }
+        ;
+
+int_list: INTEGER               { $$ = ari(NULL, $1); }
+        | int_list ',' INTEGER  { $$ = ari($1, $3); }
         ;
 
 %%
 
 #define SIZEOF_NODETYPE ((char *)&p->con - (char *)p)
+
+nodeType *ari(nodeType *prev, int value) {
+    if (value <= 0)
+        yyerror("illegal array size");
+
+    nodeType *p;
+    size_t nodeSize;
+
+    /* allocate node */
+    nodeSize = SIZEOF_NODETYPE + sizeof(ariNodeType);
+    if ((p = malloc(nodeSize)) == NULL)
+        yyerror("out of memory");
+
+    /* copy information */
+    p->type = typeAri;
+    if (prev == NULL) {
+        p->ari.ndim = 1;
+        p->ari.width = value;
+        p->ari.dims[0] = value;
+    } else {
+        p->ari.ndim = prev->ari.ndim + 1;
+        p->ari.width = value * prev->ari.width;
+        p->ari.dims[p->ari.ndim - 1] = value;
+        memcpy(p->ari.dims, prev->ari.dims, sizeof(int) * prev->ari.ndim);
+    }
+
+    return p;
+}
 
 nodeType *conInt(int value) {
     nodeType *p;

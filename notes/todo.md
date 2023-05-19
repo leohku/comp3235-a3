@@ -22,6 +22,13 @@ Development
         [X] Assignment (pop)
         [X] Use (push)
 [ ] Multi-dimension array (10%)
+    [X] Array initialisation
+        [X] Parsing
+        [X] Introducing ari()
+        [X] Refactoring opr(ARRAY)
+    [ ] Array invokation
+        [ ] Parsing
+        [ ] Refactoring ida to variadic
 [ ] Functions decl and calls with no array as param (60%)
     [ ] Scoping for var and arrays
 [ ] Functions can have arrays as params (10%)

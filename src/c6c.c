@@ -10,7 +10,7 @@ varSymTable globalVarTable;
 funcSymTable funcTable;
 char *to_lower(char *str);
 int varlookup(nodeType *p);
-int arr_symgen(char *var, int size);
+int arr_symgen(char *var, nodeType *p);
 
 static int lbl;
 
@@ -49,14 +49,14 @@ int ex(nodeType *p)
         switch (p->opr.oper)
         {
         case ARRAY:
-            arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]->con.intValue);
+            arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]);
             if (p->opr.nops == 3) {
                 ex(p->opr.op[2]);                               /* Prepare the expression value */
                 printf("\tpop\tac\n");
                 int base = varlookup(p->opr.op[0]);             /* Compute base pointer */
-                for (int i = 0; i < p->opr.op[1]->con.intValue; i++) {
+                for (int i = 0; i < p->opr.op[1]->ari.width; i++) {
                     printf("\tpush\tac\n");
-                    printf("\tpop sb[%i]\n", base + i);
+                    printf("\tpop\tsb[%i]\n", base + i);
                 }
             }
             break;
@@ -192,6 +192,9 @@ int ex(nodeType *p)
                 break;
             }
         }
+        case typeAri:
+            // Won't be running ex() on this node type
+            break;
     }
     return 0;
 }
@@ -233,7 +236,7 @@ int varlookup(nodeType *p) {
     return globalVarTable.width - 1;
 }
 
-int arr_symgen(char *var, int size) {
+int arr_symgen(char *var, nodeType *p) {
     char *loweredVar = to_lower(var);
     for (int i = 0; i < globalVarTable.count; i++) {
         if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
@@ -241,10 +244,12 @@ int arr_symgen(char *var, int size) {
             exit(1);
         }
     }
-    // TODO: ndim and dims when we support multidimensional arrays
-    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
-    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
+    varSymEntry *newEntry = &globalVarTable.variables[globalVarTable.count];
+    newEntry->ndim = p->ari.ndim;
+    memcpy(newEntry->dims, p->ari.dims, sizeof(int) * p->ari.ndim);
+    newEntry->symbol = loweredVar;
+    newEntry->offset = globalVarTable.width;
     globalVarTable.count++;
-    globalVarTable.width += size;
-    return globalVarTable.width - size;
+    globalVarTable.width += p->ari.width;
+    return globalVarTable.width - p->ari.width;
 }
