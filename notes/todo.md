@@ -26,9 +26,10 @@ Development
         [X] Parsing
         [X] Introducing ari()
         [X] Refactoring opr(ARRAY)
-    [ ] Array invokation
-        [ ] Parsing
-        [ ] Refactoring ida to variadic
+    [X] Array invokation
+        [X] Parsing
+        [X] Refactoring varlookup
+    [ ] geti, getc, gets n-d array support
 [ ] Functions decl and calls with no array as param (60%)
     [ ] Scoping for var and arrays
 [ ] Functions can have arrays as params (10%)

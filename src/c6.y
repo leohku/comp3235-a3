@@ -8,6 +8,7 @@
 
 /* prototypes */
 nodeType *ari(nodeType *prev, int value);
+nodeType *are(nodeType *prev, nodeType *exp);
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(char *value);
 nodeType *ida(char *value, nodeType *op);
@@ -43,7 +44,7 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl int_list
+%type <nPtr> stmt stmt_list expr array_decl int_list expr_list
 
 %%
 
@@ -70,7 +71,7 @@ stmt:
         | PUTS '(' expr ')' ';'		                { $$ = opr(PUTS, 1, $3); }
         | PUTS_ '(' expr ')' ';'		            { $$ = opr(PUTS_, 1, $3); }
         | VARIABLE '=' expr ';'                     { $$ = opr('=', 2, id($1), $3); }
-        | VARIABLE '[' expr ']' '=' expr ';'        { $$ = opr('=', 2, ida($1, $3), $6); }
+        | VARIABLE '[' expr_list ']' '=' expr ';'   { $$ = opr('=', 2, ida($1, $3), $6); }
 	    | FOR '(' stmt stmt stmt ')' stmt           { $$ = opr(FOR, 4, $3, $4, $5, $7); }
         | WHILE '(' expr ')' stmt                   { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX            { $$ = opr(IF, 2, $3, $5); }
@@ -79,39 +80,43 @@ stmt:
         ;
 
 stmt_list:
-          stmt                  { $$ = $1; }
-        | stmt_list stmt        { $$ = opr(';', 2, $1, $2); }
+          stmt                                      { $$ = $1; }
+        | stmt_list stmt                            { $$ = opr(';', 2, $1, $2); }
         ;
 
 expr:
-          INTEGER               { $$ = conInt($1); }
-        | CHARACTER             { $$ = conChar($1); }
-        | STRING                { $$ = conString($1); }
-        | VARIABLE              { $$ = id($1); }
-        | VARIABLE '[' expr ']' { $$ = ida($1, $3); }
-        | '-' expr %prec UMINUS { $$ = opr(UMINUS, 1, $2); }
-        | expr '+' expr         { $$ = opr('+', 2, $1, $3); }
-        | expr '-' expr         { $$ = opr('-', 2, $1, $3); }
-        | expr '*' expr         { $$ = opr('*', 2, $1, $3); }
-        | expr '%' expr         { $$ = opr('%', 2, $1, $3); }
-        | expr '/' expr         { $$ = opr('/', 2, $1, $3); }
-        | expr '<' expr         { $$ = opr('<', 2, $1, $3); }
-        | expr '>' expr         { $$ = opr('>', 2, $1, $3); }
-        | expr GE expr          { $$ = opr(GE, 2, $1, $3); }
-        | expr LE expr          { $$ = opr(LE, 2, $1, $3); }
-        | expr NE expr          { $$ = opr(NE, 2, $1, $3); }
-        | expr EQ expr          { $$ = opr(EQ, 2, $1, $3); }
-        | expr AND expr		    { $$ = opr(AND, 2, $1, $3); }
-        | expr OR expr		    { $$ = opr(OR, 2, $1, $3); }
-        | '(' expr ')'          { $$ = $2; }
+          INTEGER                                   { $$ = conInt($1); }
+        | CHARACTER                                 { $$ = conChar($1); }
+        | STRING                                    { $$ = conString($1); }
+        | VARIABLE                                  { $$ = id($1); }
+        | VARIABLE '[' expr_list ']'                { $$ = ida($1, $3); }
+        | '-' expr %prec UMINUS                     { $$ = opr(UMINUS, 1, $2); }
+        | expr '+' expr                             { $$ = opr('+', 2, $1, $3); }
+        | expr '-' expr                             { $$ = opr('-', 2, $1, $3); }
+        | expr '*' expr                             { $$ = opr('*', 2, $1, $3); }
+        | expr '%' expr                             { $$ = opr('%', 2, $1, $3); }
+        | expr '/' expr                             { $$ = opr('/', 2, $1, $3); }
+        | expr '<' expr                             { $$ = opr('<', 2, $1, $3); }
+        | expr '>' expr                             { $$ = opr('>', 2, $1, $3); }
+        | expr GE expr                              { $$ = opr(GE, 2, $1, $3); }
+        | expr LE expr                              { $$ = opr(LE, 2, $1, $3); }
+        | expr NE expr                              { $$ = opr(NE, 2, $1, $3); }
+        | expr EQ expr                              { $$ = opr(EQ, 2, $1, $3); }
+        | expr AND expr		                        { $$ = opr(AND, 2, $1, $3); }
+        | expr OR expr		                        { $$ = opr(OR, 2, $1, $3); }
+        | '(' expr ')'                              { $$ = $2; }
         ;
 
-array_decl: ARRAY VARIABLE '[' int_list ']'            { $$ = opr(ARRAY, 2, id($2), $4); }
-        | ARRAY VARIABLE '[' int_list ']' '=' expr   { $$ = opr(ARRAY, 3, id($2), $4, $7); }
+array_decl: ARRAY VARIABLE '[' int_list ']'         { $$ = opr(ARRAY, 2, id($2), $4); }
+        | ARRAY VARIABLE '[' int_list ']' '=' expr  { $$ = opr(ARRAY, 3, id($2), $4, $7); }
         ;
 
-int_list: INTEGER               { $$ = ari(NULL, $1); }
-        | int_list ',' INTEGER  { $$ = ari($1, $3); }
+int_list: INTEGER                                   { $$ = ari(NULL, $1); }
+        | int_list ',' INTEGER                      { $$ = ari($1, $3); }
+        ;
+
+expr_list: expr                                     { $$ = are(NULL, $1); }
+        | expr_list ',' expr                        { $$ = are($1, $3); }
         ;
 
 %%
@@ -141,6 +146,29 @@ nodeType *ari(nodeType *prev, int value) {
         p->ari.width = value * prev->ari.width;
         p->ari.dims[p->ari.ndim - 1] = value;
         memcpy(p->ari.dims, prev->ari.dims, sizeof(int) * prev->ari.ndim);
+    }
+
+    return p;
+}
+
+nodeType *are(nodeType *prev, nodeType *exp) {
+    nodeType *p;
+    size_t nodeSize;
+
+    /* allocate node */
+    nodeSize = SIZEOF_NODETYPE + sizeof(areNodeType);
+    if ((p = malloc(nodeSize)) == NULL)
+        yyerror("out of memory");
+
+    /* copy information */
+    p->type = typeAre;
+    if (prev == NULL) {
+        p->are.ndim = 1;
+        p->are.op[0] = exp;
+    } else {
+        p->are.ndim = prev->are.ndim + 1;
+        memcpy(p->are.op, prev->are.op, sizeof(nodeType *) * prev->are.ndim);
+        p->are.op[p->are.ndim - 1] = exp;
     }
 
     return p;

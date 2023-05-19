@@ -193,8 +193,10 @@ int ex(nodeType *p)
             }
         }
         case typeAri:
-            // Won't be running ex() on this node type
+        case typeAre:
+            // Won't be running ex() on these node types
             break;
+        
     }
     return 0;
 }
@@ -220,7 +222,16 @@ int varlookup(nodeType *p) {
         if (strcmp(var.symbol, loweredVar) == 0) {
             if (p->id.has_array_expr) {
                 printf("\tpush\t%d\n", var.offset);
-                ex(p->id.op);
+                for (int j = 0; j < p->id.op->are.ndim; j++) {
+                    if (j == 0) {
+                        ex(p->id.op->are.op[j]);
+                    } else {
+                        printf("\tpush\t%i\n", var.dims[j]);
+                        printf("\tmul\n");
+                        ex(p->id.op->are.op[j]);
+                        printf("\tadd\n");
+                    }
+                }
                 printf("\tadd\n");
                 printf("\tpop\tac\n");
                 return -1;
