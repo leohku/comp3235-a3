@@ -48,6 +48,7 @@ int ex(nodeType *p)
     case typeOpr:
         switch (p->opr.oper)
         {
+        int offset;         /* For storing result of varlookup */
         case ARRAY:
             arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]);
             if (p->opr.nops == 3) {
@@ -100,15 +101,27 @@ int ex(nodeType *p)
             break;
         case GETI:
             printf("\tgeti\n");
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]));
+            offset = varlookup(p->opr.op[0]);
+            if (offset == -1)
+                printf("\tpop\tsb[ac]\n");
+            else
+                printf("\tpop\tsb[%d]\n", offset);
             break;
         case GETC:
             printf("\tgetc\n");
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]));
+            offset = varlookup(p->opr.op[0]);
+            if (offset == -1)
+                printf("\tpop\tsb[ac]\n");
+            else
+                printf("\tpop\tsb[%d]\n", offset);
             break;
         case GETS:
             printf("\tgets\n");
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]));
+            offset = varlookup(p->opr.op[0]);
+            if (offset == -1)
+                printf("\tpop\tsb[ac]\n");
+            else
+                printf("\tpop\tsb[%d]\n", offset);
             break;
         case PUTI:
             ex(p->opr.op[0]);
@@ -136,7 +149,7 @@ int ex(nodeType *p)
             break;
         case '=':
             ex(p->opr.op[1]);
-            int offset = varlookup(p->opr.op[0]);
+            offset = varlookup(p->opr.op[0]);
             if (offset == -1)
                 printf("\tpop\tsb[ac]\n");                  /* offset dynamically calculated */
             else
@@ -213,8 +226,9 @@ char *to_lower(char *str) {
 
 // returns the offset of the variable in the stack,
 // or -1 if an array expression is passed into it and
-// dynamic computation is required. In this case, the
-// result is stored in the ac register.
+// dynamic computation is required (even if the value
+// inside the [] is static). In this case, the result
+// is stored in the ac register.
 int varlookup(nodeType *p) {
     char *loweredVar = to_lower(p->id.name);
     for (int i = 0; i < globalVarTable.count; i++) {

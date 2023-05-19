@@ -58,65 +58,68 @@ function:
         ;
 
 stmt:
-          ';'                                       { $$ = opr(';', 2, NULL, NULL); }
-        | expr ';'                                  { $$ = $1; }
-        | array_decl ';'                            { $$ = $1; }
-	    | GETI '(' VARIABLE ')' ';'		            { $$ = opr(GETI, 1, id($3)); }
-        | GETC '(' VARIABLE ')' ';'		            { $$ = opr(GETC, 1, id($3)); }
-        | GETS '(' VARIABLE ')' ';'		            { $$ = opr(GETS, 1, id($3)); }
-        | PUTI '(' expr ')' ';'		                { $$ = opr(PUTI, 1, $3); }
-        | PUTI_ '(' expr ')' ';'		            { $$ = opr(PUTI_, 1, $3); }
-        | PUTC '(' expr ')' ';'		                { $$ = opr(PUTC, 1, $3); }
-        | PUTC_ '(' expr ')' ';'		            { $$ = opr(PUTC_, 1, $3); }
-        | PUTS '(' expr ')' ';'		                { $$ = opr(PUTS, 1, $3); }
-        | PUTS_ '(' expr ')' ';'		            { $$ = opr(PUTS_, 1, $3); }
-        | VARIABLE '=' expr ';'                     { $$ = opr('=', 2, id($1), $3); }
-        | VARIABLE '[' expr_list ']' '=' expr ';'   { $$ = opr('=', 2, ida($1, $3), $6); }
-	    | FOR '(' stmt stmt stmt ')' stmt           { $$ = opr(FOR, 4, $3, $4, $5, $7); }
-        | WHILE '(' expr ')' stmt                   { $$ = opr(WHILE, 2, $3, $5); }
-        | IF '(' expr ')' stmt %prec IFX            { $$ = opr(IF, 2, $3, $5); }
-        | IF '(' expr ')' stmt ELSE stmt            { $$ = opr(IF, 3, $3, $5, $7); }
-        | '{' stmt_list '}'                         { $$ = $2; }
+          ';'                                           { $$ = opr(';', 2, NULL, NULL); }
+        | expr ';'                                      { $$ = $1; }
+        | array_decl ';'                                { $$ = $1; }
+	    | GETI '(' VARIABLE ')' ';'		                { $$ = opr(GETI, 1, id($3)); }
+        | GETI '(' VARIABLE '[' expr_list ']' ')' ';'	{ $$ = opr(GETI, 1, ida($3, $5)); }
+        | GETC '(' VARIABLE ')' ';'		                { $$ = opr(GETC, 1, id($3)); }
+        | GETC '(' VARIABLE '[' expr_list ']' ')' ';'	{ $$ = opr(GETC, 1, ida($3, $5)); }
+        | GETS '(' VARIABLE ')' ';'		                { $$ = opr(GETS, 1, id($3)); }
+        | GETS '(' VARIABLE '[' expr_list ']' ')' ';'	{ $$ = opr(GETS, 1, ida($3, $5)); }
+        | PUTI '(' expr ')' ';'		                    { $$ = opr(PUTI, 1, $3); }
+        | PUTI_ '(' expr ')' ';'		                { $$ = opr(PUTI_, 1, $3); }
+        | PUTC '(' expr ')' ';'		                    { $$ = opr(PUTC, 1, $3); }
+        | PUTC_ '(' expr ')' ';'		                { $$ = opr(PUTC_, 1, $3); }
+        | PUTS '(' expr ')' ';'		                    { $$ = opr(PUTS, 1, $3); }
+        | PUTS_ '(' expr ')' ';'		                { $$ = opr(PUTS_, 1, $3); }
+        | VARIABLE '=' expr ';'                         { $$ = opr('=', 2, id($1), $3); }
+        | VARIABLE '[' expr_list ']' '=' expr ';'       { $$ = opr('=', 2, ida($1, $3), $6); }
+	    | FOR '(' stmt stmt stmt ')' stmt               { $$ = opr(FOR, 4, $3, $4, $5, $7); }
+        | WHILE '(' expr ')' stmt                       { $$ = opr(WHILE, 2, $3, $5); }
+        | IF '(' expr ')' stmt %prec IFX                { $$ = opr(IF, 2, $3, $5); }
+        | IF '(' expr ')' stmt ELSE stmt                { $$ = opr(IF, 3, $3, $5, $7); }
+        | '{' stmt_list '}'                             { $$ = $2; }
         ;
 
 stmt_list:
-          stmt                                      { $$ = $1; }
-        | stmt_list stmt                            { $$ = opr(';', 2, $1, $2); }
+          stmt                                          { $$ = $1; }
+        | stmt_list stmt                                { $$ = opr(';', 2, $1, $2); }
         ;
 
 expr:
-          INTEGER                                   { $$ = conInt($1); }
-        | CHARACTER                                 { $$ = conChar($1); }
-        | STRING                                    { $$ = conString($1); }
-        | VARIABLE                                  { $$ = id($1); }
-        | VARIABLE '[' expr_list ']'                { $$ = ida($1, $3); }
-        | '-' expr %prec UMINUS                     { $$ = opr(UMINUS, 1, $2); }
-        | expr '+' expr                             { $$ = opr('+', 2, $1, $3); }
-        | expr '-' expr                             { $$ = opr('-', 2, $1, $3); }
-        | expr '*' expr                             { $$ = opr('*', 2, $1, $3); }
-        | expr '%' expr                             { $$ = opr('%', 2, $1, $3); }
-        | expr '/' expr                             { $$ = opr('/', 2, $1, $3); }
-        | expr '<' expr                             { $$ = opr('<', 2, $1, $3); }
-        | expr '>' expr                             { $$ = opr('>', 2, $1, $3); }
-        | expr GE expr                              { $$ = opr(GE, 2, $1, $3); }
-        | expr LE expr                              { $$ = opr(LE, 2, $1, $3); }
-        | expr NE expr                              { $$ = opr(NE, 2, $1, $3); }
-        | expr EQ expr                              { $$ = opr(EQ, 2, $1, $3); }
-        | expr AND expr		                        { $$ = opr(AND, 2, $1, $3); }
-        | expr OR expr		                        { $$ = opr(OR, 2, $1, $3); }
-        | '(' expr ')'                              { $$ = $2; }
+          INTEGER                                       { $$ = conInt($1); }
+        | CHARACTER                                     { $$ = conChar($1); }
+        | STRING                                        { $$ = conString($1); }
+        | VARIABLE                                      { $$ = id($1); }
+        | VARIABLE '[' expr_list ']'                    { $$ = ida($1, $3); }
+        | '-' expr %prec UMINUS                         { $$ = opr(UMINUS, 1, $2); }
+        | expr '+' expr                                 { $$ = opr('+', 2, $1, $3); }
+        | expr '-' expr                                 { $$ = opr('-', 2, $1, $3); }
+        | expr '*' expr                                 { $$ = opr('*', 2, $1, $3); }
+        | expr '%' expr                                 { $$ = opr('%', 2, $1, $3); }
+        | expr '/' expr                                 { $$ = opr('/', 2, $1, $3); }
+        | expr '<' expr                                 { $$ = opr('<', 2, $1, $3); }
+        | expr '>' expr                                 { $$ = opr('>', 2, $1, $3); }
+        | expr GE expr                                  { $$ = opr(GE, 2, $1, $3); }
+        | expr LE expr                                  { $$ = opr(LE, 2, $1, $3); }
+        | expr NE expr                                  { $$ = opr(NE, 2, $1, $3); }
+        | expr EQ expr                                  { $$ = opr(EQ, 2, $1, $3); }
+        | expr AND expr		                            { $$ = opr(AND, 2, $1, $3); }
+        | expr OR expr		                            { $$ = opr(OR, 2, $1, $3); }
+        | '(' expr ')'                                  { $$ = $2; }
         ;
 
-array_decl: ARRAY VARIABLE '[' int_list ']'         { $$ = opr(ARRAY, 2, id($2), $4); }
-        | ARRAY VARIABLE '[' int_list ']' '=' expr  { $$ = opr(ARRAY, 3, id($2), $4, $7); }
+array_decl: ARRAY VARIABLE '[' int_list ']'             { $$ = opr(ARRAY, 2, id($2), $4); }
+        | ARRAY VARIABLE '[' int_list ']' '=' expr      { $$ = opr(ARRAY, 3, id($2), $4, $7); }
         ;
 
-int_list: INTEGER                                   { $$ = ari(NULL, $1); }
-        | int_list ',' INTEGER                      { $$ = ari($1, $3); }
+int_list: INTEGER                                       { $$ = ari(NULL, $1); }
+        | int_list ',' INTEGER                          { $$ = ari($1, $3); }
         ;
 
-expr_list: expr                                     { $$ = are(NULL, $1); }
-        | expr_list ',' expr                        { $$ = are($1, $3); }
+expr_list: expr                                         { $$ = are(NULL, $1); }
+        | expr_list ',' expr                            { $$ = are($1, $3); }
         ;
 
 %%
