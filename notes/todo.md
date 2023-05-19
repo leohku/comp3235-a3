@@ -8,15 +8,19 @@ Development
 [X] Migrate old symbol table
 [X] Move var symgen to codegen
 
-[ ] Single dimension array in global scope (40%)
+[X] Single dimension array in global scope (40%)
     [X] Array initialisation
         [X] Lexing
         [X] Parsing
         [X] Symgen
         [X] Without initial value
         [X] With initial value
-    [ ] Array invokation
-        [ ] Lexing and parsing
+    [X] Array invokation
+        [X] Lexing
+        [X] Parsing
+        [X] Symlookup
+        [X] Assignment (pop)
+        [X] Use (push)
 [ ] Multi-dimension array (10%)
 [ ] Functions decl and calls with no array as param (60%)
     [ ] Scoping for var and arrays

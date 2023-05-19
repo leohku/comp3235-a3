@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 typedef enum { typeCon, typeId, typeOpr } nodeEnum;
 typedef enum { conTypeInt, conTypeChar, conTypeString } conTypeEnum;
 
@@ -37,7 +39,9 @@ typedef struct {
 
 /* identifiers */
 typedef struct {
-    char* name;                      /* variable name */
+    char *name;                     /* variable name */
+    bool has_array_expr;            /* has array expression */
+    struct nodeTypeTag *op;         /* array index expression */
 } idNodeType;
 
 /* operators */

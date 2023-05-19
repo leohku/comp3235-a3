@@ -9,7 +9,7 @@
 varSymTable globalVarTable;
 funcSymTable funcTable;
 char *to_lower(char *str);
-int varlookup(char *var);
+int varlookup(nodeType *p);
 int arr_symgen(char *var, int size);
 
 static int lbl;
@@ -37,7 +37,13 @@ int ex(nodeType *p)
         }
         break;
     case typeId:
-        printf("\tpush\tsb[%d]\n", varlookup(p->id.name));
+        {
+        int offset = varlookup(p);
+        if (offset == -1)
+            printf("\tpush\tsb[ac]\n");
+        else
+            printf("\tpush\tsb[%d]\n", offset);
+        }
         break;
     case typeOpr:
         switch (p->opr.oper)
@@ -46,10 +52,10 @@ int ex(nodeType *p)
             arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]->con.intValue);
             if (p->opr.nops == 3) {
                 ex(p->opr.op[2]);                               /* Prepare the expression value */
-                printf("\tpop ac\n");
-                int base = varlookup(p->opr.op[0]->id.name);    /* Compute base pointer */
+                printf("\tpop\tac\n");
+                int base = varlookup(p->opr.op[0]);             /* Compute base pointer */
                 for (int i = 0; i < p->opr.op[1]->con.intValue; i++) {
-                    printf("\tpush ac\n");
+                    printf("\tpush\tac\n");
                     printf("\tpop sb[%i]\n", base + i);
                 }
             }
@@ -94,15 +100,15 @@ int ex(nodeType *p)
             break;
         case GETI:
             printf("\tgeti\n");
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]));
             break;
         case GETC:
             printf("\tgetc\n");
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]));
             break;
         case GETS:
             printf("\tgets\n");
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
+            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]));
             break;
         case PUTI:
             ex(p->opr.op[0]);
@@ -130,7 +136,11 @@ int ex(nodeType *p)
             break;
         case '=':
             ex(p->opr.op[1]);
-            printf("\tpop\tsb[%d]\n", varlookup(p->opr.op[0]->id.name));
+            int offset = varlookup(p->opr.op[0]);
+            if (offset == -1)
+                printf("\tpop\tsb[ac]\n");                  /* offset dynamically calculated */
+            else
+                printf("\tpop\tsb[%d]\n", offset);          /* offset statically determined */
             break;
         case UMINUS:
             ex(p->opr.op[0]);
@@ -196,13 +206,26 @@ char *to_lower(char *str) {
     return new_str;
 }
 
-int varlookup(char *var) {
-    char *loweredVar = to_lower(var);
+// returns the offset of the variable in the stack,
+// or -1 if an array expression is passed into it and
+// dynamic computation is required. In this case, the
+// result is stored in the ac register.
+int varlookup(nodeType *p) {
+    char *loweredVar = to_lower(p->id.name);
     for (int i = 0; i < globalVarTable.count; i++) {
-        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
-            return globalVarTable.variables[i].offset;
+        varSymEntry var = globalVarTable.variables[i];
+        if (strcmp(var.symbol, loweredVar) == 0) {
+            if (p->id.has_array_expr) {
+                printf("\tpush\t%d\n", var.offset);
+                ex(p->id.op);
+                printf("\tadd\n");
+                printf("\tpop\tac\n");
+                return -1;
+            }
+            return var.offset;
         }
     }
+    // Declare on first use
     globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
     globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
     globalVarTable.count++;

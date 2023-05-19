@@ -8,6 +8,7 @@
 /* prototypes */
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(char *value);
+nodeType *ida(char *value, nodeType *op);
 nodeType *conInt(int value);
 nodeType *conChar(char value);
 nodeType *conString(char *value);
@@ -67,6 +68,7 @@ stmt:
         | PUTS '(' expr ')' ';'		                { $$ = opr(PUTS, 1, $3); }
         | PUTS_ '(' expr ')' ';'		            { $$ = opr(PUTS_, 1, $3); }
         | VARIABLE '=' expr ';'                     { $$ = opr('=', 2, id($1), $3); }
+        | VARIABLE '[' expr ']' '=' expr ';'        { $$ = opr('=', 2, ida($1, $3), $6); }
 	    | FOR '(' stmt stmt stmt ')' stmt           { $$ = opr(FOR, 4, $3, $4, $5, $7); }
         | WHILE '(' expr ')' stmt                   { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX            { $$ = opr(IF, 2, $3, $5); }
@@ -84,6 +86,7 @@ expr:
         | CHARACTER             { $$ = conChar($1); }
         | STRING                { $$ = conString($1); }
         | VARIABLE              { $$ = id($1); }
+        | VARIABLE '[' expr ']' { $$ = ida($1, $3); }
         | '-' expr %prec UMINUS { $$ = opr(UMINUS, 1, $2); }
         | expr '+' expr         { $$ = opr('+', 2, $1, $3); }
         | expr '-' expr         { $$ = opr('-', 2, $1, $3); }
@@ -172,6 +175,25 @@ nodeType *id(char *value) {
     /* copy information */
     p->type = typeId;
     p->id.name = value;
+    p->id.has_array_expr = false;
+
+    return p;
+}
+
+nodeType *ida(char *value, nodeType *op) {
+    nodeType *p;
+    size_t nodeSize;
+
+    /* allocate node */
+    nodeSize = SIZEOF_NODETYPE + sizeof(idNodeType);
+    if ((p = malloc(nodeSize)) == NULL)
+        yyerror("out of memory");
+
+    /* copy information */
+    p->type = typeId;
+    p->id.name = value;
+    p->id.has_array_expr = true;
+    p->id.op = op;
 
     return p;
 }
