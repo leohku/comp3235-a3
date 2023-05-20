@@ -30,6 +30,7 @@ Development
         [X] Parsing
         [X] Refactoring varlookup
     [X] geti, getc, gets n-d array support
+    [ ] Multiple array declaration per line                     <- NOT DONE
 [ ] Functions decl and calls with no array as param (60%)
     [ ] Function declaration site
         [X] Delayed emission (sprintf to two buffers)
@@ -39,14 +40,18 @@ Development
             [X] Function symtable entry - name and params
             [ ] Function body code gen
                 [X] Scope activation and deactivation
-                [ ] varlookup & arr_symgen refactoring to support local scopes
-                    [ ] varlookup emits full register
-                [ ] Local variable symtable entries
-            [ ] "var" generation and WIP buffer emission
+                [X] varlookup & arr_symgen refactoring to support local scopes
+                    [X] Create return structs for searchVarTable and searchPrmTable
+                    [X] Local variable symtable entries
+                    [X] arr_symgen refactoring
+                    [X] varlookup emits full register
+                    [X] varlookup consumer refactoring to take register
+                [ ] "var" generation and WIP buffer emission
+                [ ] Output buffer switching depending on scope
+                [ ] Return behaviour (including ret with optional return value)
             [ ] Global variables denoted with "@"
                 [ ] Lexing and parsing
             [ ] Expect global addresses for all array params (10%)
-            [ ] Return behaviour (ret for all with optional return value)
     [ ] Function calling site
         [ ] Lexing and parsing
         [ ] Pass global address for all array params (10%)

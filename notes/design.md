@@ -71,8 +71,8 @@ Local scope:
     Parameter passed by value (no offset calculation required in ac)
         static offset -> fp[n]
     Parameter passed by reference
-        offset in accumulator -> sb[ac]
-        static offset -> sb[n]
+        offset in accumulator (with []) -> sb[ac]
+        offset in accumulator (w/o []) -> sb[ac] (auto de-referencing)
     Local variable:
         offset in accumulator -> fp[ac]
         static offset -> fp[n]

@@ -100,6 +100,13 @@ typedef struct nodeTypeTag {
     };
 } nodeType;
 
+/* return type for table search */
+typedef struct {
+    bool found;
+    char *reg;
+    int offset;                 /* -1: in ac, else statically determined */
+} tableSearchResult;
+
 extern char *output;
 extern char *wip;
 extern char *wip_start;
