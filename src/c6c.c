@@ -50,6 +50,7 @@ int ex(nodeType *p)
         switch (p->opr.oper)
         {
         case ARRAY:
+        {
             int base = arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]) + funcTable.functions[scope].prmtable.count;
             if (p->opr.nops == 3)
             {
@@ -61,7 +62,8 @@ int ex(nodeType *p)
                     output += sprintf(output, "\tpop\t%s[%i]\n", scope == -1 ? "sb" : "fp", base + i);
                 }
             }
-            break;
+        }
+        break;
         case FOR:
             ex(p->opr.op[0]);
             output += sprintf(output, "L%03d:\n", lblx = lbl++);
@@ -199,10 +201,10 @@ int ex(nodeType *p)
         scope = func_symgen(p->func.name, p->func.param);
         // Generate function body in WIP buffer
         ex(p->func.body);
-        // Generate var line
+        // TODO: Generate var line
 
         scope = -1;
-        // Write WIP buffer to output buffer
+        // TODO: Write WIP buffer to output buffer
 
         output += sprintf(output, "\tret\n");
         output += sprintf(output, "L%03d:\n", lbl2);
@@ -264,14 +266,16 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
                 }
                 output += sprintf(output, "\tadd\n");
                 output += sprintf(output, "\tpop\tac\n");
-                result->offset = -1;                            /* offset dynamically calculated */
-            } else {
-                result->offset = var->offset;                   /* offset statically determined */
+                result->offset = -1; /* offset dynamically calculated */
+            }
+            else
+            {
+                result->offset = var->offset; /* offset statically determined */
             }
             return result;
         }
     }
-    result->found = false;                                      /* not found */
+    result->found = false; /* not found */
     return result;
 }
 
@@ -288,11 +292,13 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
             result->found = true;
             if (p->id.has_array_expr)
             {
-                if (var->is_array == false) {
+                if (var->is_array == false)
+                {
                     fprintf(stderr, "%s is not an array\n", var->symbol);
                     exit(1);
                 }
-                if (p->id.op->are.ndim != 1) {
+                if (p->id.op->are.ndim != 1)
+                {
                     fprintf(stderr, "n-d array indexing not supported for parameters yet\n");
                     exit(1);
                 }
@@ -300,23 +306,27 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
                 ex(p->id.op->are.op[0]);
                 output += sprintf(output, "\tadd\n");
                 output += sprintf(output, "\tpop\tac\n");
-                result->offset = -1;                            /* offset dynamically calculated */
+                result->offset = -1; /* offset dynamically calculated */
                 result->reg = "sb";
                 return result;
-            } else if (var->is_array == true) {                 /* auto de-referencing case */
+            }
+            else if (var->is_array == true)
+            { /* auto de-referencing case */
                 output += sprintf(output, "\tpush\tfp[%d]\n", i);
                 output += sprintf(output, "\tpop\tac\n");
-                result->offset = -1;                            /* offset dynamically calculated */
+                result->offset = -1; /* offset dynamically calculated */
                 result->reg = "sb";
                 return result;
-            } else {
-                result->offset = i;                             /* offset statically determined */
+            }
+            else
+            {
+                result->offset = i; /* offset statically determined */
                 result->reg = "fp";
                 return result;
             }
         }
     }
-    result->found = false;                                      /* not found */
+    result->found = false; /* not found */
     return result;
 }
 
@@ -329,10 +339,14 @@ char *varlookup(nodeType *p)
     if (scope == -1)
     {
         t = searchVarTable(p, &globalVarTable, true);
-        if (t->found) {
-            if (t->offset == -1) {
+        if (t->found)
+        {
+            if (t->offset == -1)
+            {
                 sprintf(r, "%s[%s]", t->reg, "ac");
-            } else {
+            }
+            else
+            {
                 sprintf(r, "%s[%d]", t->reg, t->offset);
             }
             return r;
@@ -342,36 +356,48 @@ char *varlookup(nodeType *p)
     {
         // Search local vartable
         t = searchVarTable(p, &funcTable.functions[scope].vartable, false);
-        if (t->found) {
-            if (t->offset == -1) {
+        if (t->found)
+        {
+            if (t->offset == -1)
+            {
                 // Need to add offset of arguments to ac
                 output += sprintf(output, "\tpush\tac\n");
                 output += sprintf(output, "\tpush\t%d\n", funcTable.functions[scope].prmtable.count);
                 output += sprintf(output, "\tadd\n");
                 output += sprintf(output, "\tpop\tac\n");
-                sprintf(r, "%s[%s]", t->reg, "ac");                                                     /* fp[ac] */
-            } else {
-                sprintf(r, "%s[%d]", t->reg, t->offset + funcTable.functions[scope].prmtable.count);    /* fp[<offset>] */
+                sprintf(r, "%s[%s]", t->reg, "ac"); /* fp[ac] */
+            }
+            else
+            {
+                sprintf(r, "%s[%d]", t->reg, t->offset + funcTable.functions[scope].prmtable.count); /* fp[<offset>] */
             }
             return r;
         }
         // Search local prmtable
         t = searchPrmTable(p, &funcTable.functions[scope].prmtable);
-        if (t->found) {
-            if (t->offset == -1) {
-                sprintf(r, "%s[%s]", t->reg, "ac");                                                     /* sb[ac], pass by reference */
-            } else {
-                sprintf(r, "%s[%d]", t->reg, t->offset);                                                /* fp[<offset>], pass by value */
+        if (t->found)
+        {
+            if (t->offset == -1)
+            {
+                sprintf(r, "%s[%s]", t->reg, "ac"); /* sb[ac], pass by reference */
+            }
+            else
+            {
+                sprintf(r, "%s[%d]", t->reg, t->offset); /* fp[<offset>], pass by value */
             }
             return r;
         }
         // Search global vartable
         t = searchVarTable(p, &globalVarTable, true);
-        if (t->found) {
-            if (t->offset == -1) {
-                sprintf(r, "%s[%s]", t->reg, "ac");                                                     /* sb[ac] */
-            } else {
-                sprintf(r, "%s[%d]", t->reg, t->offset);                                                /* sb[<offset>] */
+        if (t->found)
+        {
+            if (t->offset == -1)
+            {
+                sprintf(r, "%s[%s]", t->reg, "ac"); /* sb[ac] */
+            }
+            else
+            {
+                sprintf(r, "%s[%d]", t->reg, t->offset); /* sb[<offset>] */
             }
             return r;
         }
