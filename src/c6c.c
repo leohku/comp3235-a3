@@ -26,13 +26,13 @@ int ex(nodeType *p)
         switch (p->con.conType)
         {
         case conTypeInt:
-            printf("\tpush\t%d\n", p->con.intValue);
+            output += sprintf(output, "\tpush\t%d\n", p->con.intValue);
             break;
         case conTypeChar:
-            printf("\tpush\t'%c'\n", p->con.charValue);
+            output += sprintf(output, "\tpush\t'%c'\n", p->con.charValue);
             break;
         case conTypeString:
-            printf("\tpush\t\"%s\"\n", p->con.strValue);
+            output += sprintf(output, "\tpush\t\"%s\"\n", p->con.strValue);
             break;
         }
         break;
@@ -40,9 +40,9 @@ int ex(nodeType *p)
         {
         int offset = varlookup(p);
         if (offset == -1)
-            printf("\tpush\tsb[ac]\n");
+            output += sprintf(output, "\tpush\tsb[ac]\n");
         else
-            printf("\tpush\tsb[%d]\n", offset);
+            output += sprintf(output, "\tpush\tsb[%d]\n", offset);
         }
         break;
     case typeOpr:
@@ -53,111 +53,111 @@ int ex(nodeType *p)
             arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]);
             if (p->opr.nops == 3) {
                 ex(p->opr.op[2]);                               /* Prepare the expression value */
-                printf("\tpop\tac\n");
+                output += sprintf(output, "\tpop\tac\n");
                 int base = varlookup(p->opr.op[0]);             /* Compute base pointer */
                 for (int i = 0; i < p->opr.op[1]->ari.width; i++) {
-                    printf("\tpush\tac\n");
-                    printf("\tpop\tsb[%i]\n", base + i);
+                    output += sprintf(output, "\tpush\tac\n");
+                    output += sprintf(output, "\tpop\tsb[%i]\n", base + i);
                 }
             }
             break;
         case FOR:
             ex(p->opr.op[0]);
-            printf("L%03d:\n", lblx = lbl++);
+            output += sprintf(output, "L%03d:\n", lblx = lbl++);
             ex(p->opr.op[1]);
-            printf("\tj0\tL%03d\n", lbly = lbl++);
+            output += sprintf(output, "\tj0\tL%03d\n", lbly = lbl++);
             ex(p->opr.op[3]);
             ex(p->opr.op[2]);
-            printf("\tjmp\tL%03d\n", lblx);
-            printf("L%03d:\n", lbly);
+            output += sprintf(output, "\tjmp\tL%03d\n", lblx);
+            output += sprintf(output, "L%03d:\n", lbly);
             break;
         case WHILE:
-            printf("L%03d:\n", lbl1 = lbl++);
+            output += sprintf(output, "L%03d:\n", lbl1 = lbl++);
             ex(p->opr.op[0]);
-            printf("\tj0\tL%03d\n", lbl2 = lbl++);
+            output += sprintf(output, "\tj0\tL%03d\n", lbl2 = lbl++);
             ex(p->opr.op[1]);
-            printf("\tjmp\tL%03d\n", lbl1);
-            printf("L%03d:\n", lbl2);
+            output += sprintf(output, "\tjmp\tL%03d\n", lbl1);
+            output += sprintf(output, "L%03d:\n", lbl2);
             break;
         case IF:
             ex(p->opr.op[0]);
             if (p->opr.nops > 2)
             {
                 /* if else */
-                printf("\tj0\tL%03d\n", lbl1 = lbl++);
+                output += sprintf(output, "\tj0\tL%03d\n", lbl1 = lbl++);
                 ex(p->opr.op[1]);
-                printf("\tjmp\tL%03d\n", lbl2 = lbl++);
-                printf("L%03d:\n", lbl1);
+                output += sprintf(output, "\tjmp\tL%03d\n", lbl2 = lbl++);
+                output += sprintf(output, "L%03d:\n", lbl1);
                 ex(p->opr.op[2]);
-                printf("L%03d:\n", lbl2);
+                output += sprintf(output, "L%03d:\n", lbl2);
             }
             else
             {
                 /* if */
-                printf("\tj0\tL%03d\n", lbl1 = lbl++);
+                output += sprintf(output, "\tj0\tL%03d\n", lbl1 = lbl++);
                 ex(p->opr.op[1]);
-                printf("L%03d:\n", lbl1);
+                output += sprintf(output, "L%03d:\n", lbl1);
             }
             break;
         case GETI:
-            printf("\tgeti\n");
+            output += sprintf(output, "\tgeti\n");
             offset = varlookup(p->opr.op[0]);
             if (offset == -1)
-                printf("\tpop\tsb[ac]\n");
+                output += sprintf(output, "\tpop\tsb[ac]\n");
             else
-                printf("\tpop\tsb[%d]\n", offset);
+                output += sprintf(output, "\tpop\tsb[%d]\n", offset);
             break;
         case GETC:
-            printf("\tgetc\n");
+            output += sprintf(output, "\tgetc\n");
             offset = varlookup(p->opr.op[0]);
             if (offset == -1)
-                printf("\tpop\tsb[ac]\n");
+                output += sprintf(output, "\tpop\tsb[ac]\n");
             else
-                printf("\tpop\tsb[%d]\n", offset);
+                output += sprintf(output, "\tpop\tsb[%d]\n", offset);
             break;
         case GETS:
-            printf("\tgets\n");
+            output += sprintf(output, "\tgets\n");
             offset = varlookup(p->opr.op[0]);
             if (offset == -1)
-                printf("\tpop\tsb[ac]\n");
+                output += sprintf(output, "\tpop\tsb[ac]\n");
             else
-                printf("\tpop\tsb[%d]\n", offset);
+                output += sprintf(output, "\tpop\tsb[%d]\n", offset);
             break;
         case PUTI:
             ex(p->opr.op[0]);
-            printf("\tputi\n");
+            output += sprintf(output, "\tputi\n");
             break;
         case PUTI_:
             ex(p->opr.op[0]);
-            printf("\tputi_\n");
+            output += sprintf(output, "\tputi_\n");
             break;
         case PUTC:
             ex(p->opr.op[0]);
-            printf("\tputc\n");
+            output += sprintf(output, "\tputc\n");
             break;
         case PUTC_:
             ex(p->opr.op[0]);
-            printf("\tputc_\n");
+            output += sprintf(output, "\tputc_\n");
             break;
         case PUTS:
             ex(p->opr.op[0]);
-            printf("\tputs\n");
+            output += sprintf(output, "\tputs\n");
             break;
         case PUTS_:
             ex(p->opr.op[0]);
-            printf("\tputs_\n");
+            output += sprintf(output, "\tputs_\n");
             break;
         case '=':
             ex(p->opr.op[1]);
             offset = varlookup(p->opr.op[0]);
             if (offset == -1)
-                printf("\tpop\tsb[ac]\n");                  /* offset dynamically calculated */
+                output += sprintf(output, "\tpop\tsb[ac]\n");                  /* offset dynamically calculated */
             else
-                printf("\tpop\tsb[%d]\n", offset);          /* offset statically determined */
+                output += sprintf(output, "\tpop\tsb[%d]\n", offset);          /* offset statically determined */
             break;
         case UMINUS:
             ex(p->opr.op[0]);
-            printf("\tneg\n");
+            output += sprintf(output, "\tneg\n");
             break;
         default:
             ex(p->opr.op[0]);
@@ -165,43 +165,43 @@ int ex(nodeType *p)
             switch (p->opr.oper)
             {
             case '+':
-                printf("\tadd\n");
+                output += sprintf(output, "\tadd\n");
                 break;
             case '-':
-                printf("\tsub\n");
+                output += sprintf(output, "\tsub\n");
                 break;
             case '*':
-                printf("\tmul\n");
+                output += sprintf(output, "\tmul\n");
                 break;
             case '/':
-                printf("\tdiv\n");
+                output += sprintf(output, "\tdiv\n");
                 break;
             case '%':
-                printf("\tmod\n");
+                output += sprintf(output, "\tmod\n");
                 break;
             case '<':
-                printf("\tcompLT\n");
+                output += sprintf(output, "\tcompLT\n");
                 break;
             case '>':
-                printf("\tcompGT\n");
+                output += sprintf(output, "\tcompGT\n");
                 break;
             case GE:
-                printf("\tcompGE\n");
+                output += sprintf(output, "\tcompGE\n");
                 break;
             case LE:
-                printf("\tcompLE\n");
+                output += sprintf(output, "\tcompLE\n");
                 break;
             case NE:
-                printf("\tcompNE\n");
+                output += sprintf(output, "\tcompNE\n");
                 break;
             case EQ:
-                printf("\tcompEQ\n");
+                output += sprintf(output, "\tcompEQ\n");
                 break;
             case AND:
-                printf("\tand\n");
+                output += sprintf(output, "\tand\n");
                 break;
             case OR:
-                printf("\tor\n");
+                output += sprintf(output, "\tor\n");
                 break;
             }
         }
@@ -235,19 +235,19 @@ int varlookup(nodeType *p) {
         varSymEntry var = globalVarTable.variables[i];
         if (strcmp(var.symbol, loweredVar) == 0) {
             if (p->id.has_array_expr) {
-                printf("\tpush\t%d\n", var.offset);
+                output += sprintf(output, "\tpush\t%d\n", var.offset);
                 for (int j = 0; j < p->id.op->are.ndim; j++) {
                     if (j == 0) {
                         ex(p->id.op->are.op[j]);
                     } else {
-                        printf("\tpush\t%i\n", var.dims[j]);
-                        printf("\tmul\n");
+                        output += sprintf(output, "\tpush\t%i\n", var.dims[j]);
+                        output += sprintf(output, "\tmul\n");
                         ex(p->id.op->are.op[j]);
-                        printf("\tadd\n");
+                        output += sprintf(output, "\tadd\n");
                     }
                 }
-                printf("\tadd\n");
-                printf("\tpop\tac\n");
+                output += sprintf(output, "\tadd\n");
+                output += sprintf(output, "\tpop\tac\n");
                 return -1;
             }
             return var.offset;
@@ -265,8 +265,7 @@ int arr_symgen(char *var, nodeType *p) {
     char *loweredVar = to_lower(var);
     for (int i = 0; i < globalVarTable.count; i++) {
         if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
-            printf("Error: array \"%s\" already declared\n", var);
-            exit(1);
+            output += sprintf(output, "array \"%s\" already declared\n", var);
         }
     }
     varSymEntry *newEntry = &globalVarTable.variables[globalVarTable.count];

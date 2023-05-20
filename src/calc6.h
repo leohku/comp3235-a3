@@ -5,8 +5,8 @@ typedef enum { conTypeInt, conTypeChar, conTypeString } conTypeEnum;
 
 /* variable symtable */
 typedef struct {
-    char* symbol;
-    int ndim;
+    char *symbol;
+    int ndim;                   /* 0 if variable, 1 or higher if array */
     int offset;
     int dims[10];
 } varSymEntry;
@@ -19,7 +19,7 @@ typedef struct {
 
 /* function symtable */
 typedef struct {
-    char* symbol;
+    char *symbol;
     varSymTable argtable;
     varSymTable vartable;
 } funcSymEntry;
@@ -76,6 +76,9 @@ typedef struct nodeTypeTag {
     };
 } nodeType;
 
+extern char *output;
+extern char *wip;
+extern char *wip_start;
 extern varSymTable globalVarTable;
 extern varSymTable localVarTable;
 extern funcSymTable funcTable;

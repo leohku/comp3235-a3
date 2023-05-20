@@ -19,6 +19,12 @@ void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
 void yyerror(char *s);
+
+/* output buffers and pointers */
+char *output;
+char *output_start;
+char *wip;
+char *wip_start;
 %}
 
 %union {
@@ -49,11 +55,11 @@ void yyerror(char *s);
 %%
 
 program:
-        function                { exit(0); }
+        function
         ;
 
 function:
-          function stmt         { ex($2); freeNode($2); }
+          function stmt                                 { ex($2); freeNode($2); }
         | /* NULL */
         ;
 
@@ -298,7 +304,7 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    fprintf(stdout, "%s\n", s);
+    sprintf(output, "%s\n", s);
 }
 
 int main(int argc, char **argv) {
@@ -312,12 +318,22 @@ extern FILE* yyin;
     // Function table initialisation
     funcTable.count = 0;
 
+    // Prepare output buffers and pointers
+    output = malloc(sizeof(char) * 1000000);
+    wip = malloc(sizeof(char) * 1000000);
+    output_start = output;
+    wip_start = wip;
+
     // Stack pointer initialisation hack
-    printf("\tpush\tsp\n");
-    printf("\tpush\t10000\n");
-    printf("\tadd\n");
-    printf("\tpop\tsp\n");
+    output += sprintf(output, "\tpush\tsp\n");
+    output += sprintf(output, "\tpush\t10000\n");
+    output += sprintf(output, "\tadd\n");
+    output += sprintf(output, "\tpop\tsp\n");
 
     yyparse();
+
+    // Print the output
+    printf("%s", output_start);
+
     return 0;
 }

@@ -90,7 +90,13 @@ int ex(nodeType *p);
 int yylex(void);
 void yyerror(char *s);
 
-#line 94 "y.tab.c"
+/* output buffers and pointers */
+char *output;
+char *output_start;
+char *wip;
+char *wip_start;
+
+#line 100 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -199,14 +205,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 24 "c6.y"
+#line 30 "c6.y"
 
     int iValue;                 /* integer value */
     char cValue;                /* character value */
     char *sValue;               /* string value */
     nodeType *nPtr;             /* node pointer */
 
-#line 210 "y.tab.c"
+#line 216 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -666,14 +672,14 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    52,    52,    56,    57,    61,    62,    63,    64,    65,
-      66,    67,    68,    69,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    80,    81,    82,    86,    87,    91,
-      92,    93,    94,    95,    96,    97,    98,    99,   100,   101,
-     102,   103,   104,   105,   106,   107,   108,   109,   110,   113,
-     114,   117,   118,   121,   122
+       0,    58,    58,    62,    63,    67,    68,    69,    70,    71,
+      72,    73,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,    83,    84,    85,    86,    87,    88,    92,    93,    97,
+      98,    99,   100,   101,   102,   103,   104,   105,   106,   107,
+     108,   109,   110,   111,   112,   113,   114,   115,   116,   119,
+     120,   123,   124,   127,   128
 };
 #endif
 
@@ -1365,314 +1371,308 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* program: function  */
-#line 52 "c6.y"
-                                { exit(0); }
-#line 1372 "y.tab.c"
-    break;
-
   case 3: /* function: function stmt  */
-#line 56 "c6.y"
-                                { ex((yyvsp[0].nPtr)); freeNode((yyvsp[0].nPtr)); }
+#line 62 "c6.y"
+                                                        { ex((yyvsp[0].nPtr)); freeNode((yyvsp[0].nPtr)); }
 #line 1378 "y.tab.c"
     break;
 
   case 5: /* stmt: ';'  */
-#line 61 "c6.y"
+#line 67 "c6.y"
                                                         { (yyval.nPtr) = opr(';', 2, NULL, NULL); }
 #line 1384 "y.tab.c"
     break;
 
   case 6: /* stmt: expr ';'  */
-#line 62 "c6.y"
+#line 68 "c6.y"
                                                         { (yyval.nPtr) = (yyvsp[-1].nPtr); }
 #line 1390 "y.tab.c"
     break;
 
   case 7: /* stmt: array_decl ';'  */
-#line 63 "c6.y"
+#line 69 "c6.y"
                                                         { (yyval.nPtr) = (yyvsp[-1].nPtr); }
 #line 1396 "y.tab.c"
     break;
 
   case 8: /* stmt: GETI '(' VARIABLE ')' ';'  */
-#line 64 "c6.y"
+#line 70 "c6.y"
                                                                 { (yyval.nPtr) = opr(GETI, 1, id((yyvsp[-2].sValue))); }
 #line 1402 "y.tab.c"
     break;
 
   case 9: /* stmt: GETI '(' VARIABLE '[' expr_list ']' ')' ';'  */
-#line 65 "c6.y"
+#line 71 "c6.y"
                                                         { (yyval.nPtr) = opr(GETI, 1, ida((yyvsp[-5].sValue), (yyvsp[-3].nPtr))); }
 #line 1408 "y.tab.c"
     break;
 
   case 10: /* stmt: GETC '(' VARIABLE ')' ';'  */
-#line 66 "c6.y"
+#line 72 "c6.y"
                                                                 { (yyval.nPtr) = opr(GETC, 1, id((yyvsp[-2].sValue))); }
 #line 1414 "y.tab.c"
     break;
 
   case 11: /* stmt: GETC '(' VARIABLE '[' expr_list ']' ')' ';'  */
-#line 67 "c6.y"
+#line 73 "c6.y"
                                                         { (yyval.nPtr) = opr(GETC, 1, ida((yyvsp[-5].sValue), (yyvsp[-3].nPtr))); }
 #line 1420 "y.tab.c"
     break;
 
   case 12: /* stmt: GETS '(' VARIABLE ')' ';'  */
-#line 68 "c6.y"
+#line 74 "c6.y"
                                                                 { (yyval.nPtr) = opr(GETS, 1, id((yyvsp[-2].sValue))); }
 #line 1426 "y.tab.c"
     break;
 
   case 13: /* stmt: GETS '(' VARIABLE '[' expr_list ']' ')' ';'  */
-#line 69 "c6.y"
+#line 75 "c6.y"
                                                         { (yyval.nPtr) = opr(GETS, 1, ida((yyvsp[-5].sValue), (yyvsp[-3].nPtr))); }
 #line 1432 "y.tab.c"
     break;
 
   case 14: /* stmt: PUTI '(' expr ')' ';'  */
-#line 70 "c6.y"
+#line 76 "c6.y"
                                                             { (yyval.nPtr) = opr(PUTI, 1, (yyvsp[-2].nPtr)); }
 #line 1438 "y.tab.c"
     break;
 
   case 15: /* stmt: PUTI_ '(' expr ')' ';'  */
-#line 71 "c6.y"
+#line 77 "c6.y"
                                                                 { (yyval.nPtr) = opr(PUTI_, 1, (yyvsp[-2].nPtr)); }
 #line 1444 "y.tab.c"
     break;
 
   case 16: /* stmt: PUTC '(' expr ')' ';'  */
-#line 72 "c6.y"
+#line 78 "c6.y"
                                                             { (yyval.nPtr) = opr(PUTC, 1, (yyvsp[-2].nPtr)); }
 #line 1450 "y.tab.c"
     break;
 
   case 17: /* stmt: PUTC_ '(' expr ')' ';'  */
-#line 73 "c6.y"
+#line 79 "c6.y"
                                                                 { (yyval.nPtr) = opr(PUTC_, 1, (yyvsp[-2].nPtr)); }
 #line 1456 "y.tab.c"
     break;
 
   case 18: /* stmt: PUTS '(' expr ')' ';'  */
-#line 74 "c6.y"
+#line 80 "c6.y"
                                                             { (yyval.nPtr) = opr(PUTS, 1, (yyvsp[-2].nPtr)); }
 #line 1462 "y.tab.c"
     break;
 
   case 19: /* stmt: PUTS_ '(' expr ')' ';'  */
-#line 75 "c6.y"
+#line 81 "c6.y"
                                                                 { (yyval.nPtr) = opr(PUTS_, 1, (yyvsp[-2].nPtr)); }
 #line 1468 "y.tab.c"
     break;
 
   case 20: /* stmt: VARIABLE '=' expr ';'  */
-#line 76 "c6.y"
+#line 82 "c6.y"
                                                         { (yyval.nPtr) = opr('=', 2, id((yyvsp[-3].sValue)), (yyvsp[-1].nPtr)); }
 #line 1474 "y.tab.c"
     break;
 
   case 21: /* stmt: VARIABLE '[' expr_list ']' '=' expr ';'  */
-#line 77 "c6.y"
+#line 83 "c6.y"
                                                         { (yyval.nPtr) = opr('=', 2, ida((yyvsp[-6].sValue), (yyvsp[-4].nPtr)), (yyvsp[-1].nPtr)); }
 #line 1480 "y.tab.c"
     break;
 
   case 22: /* stmt: FOR '(' stmt stmt stmt ')' stmt  */
-#line 78 "c6.y"
+#line 84 "c6.y"
                                                             { (yyval.nPtr) = opr(FOR, 4, (yyvsp[-4].nPtr), (yyvsp[-3].nPtr), (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1486 "y.tab.c"
     break;
 
   case 23: /* stmt: WHILE '(' expr ')' stmt  */
-#line 79 "c6.y"
+#line 85 "c6.y"
                                                         { (yyval.nPtr) = opr(WHILE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1492 "y.tab.c"
     break;
 
   case 24: /* stmt: IF '(' expr ')' stmt  */
-#line 80 "c6.y"
+#line 86 "c6.y"
                                                         { (yyval.nPtr) = opr(IF, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1498 "y.tab.c"
     break;
 
   case 25: /* stmt: IF '(' expr ')' stmt ELSE stmt  */
-#line 81 "c6.y"
+#line 87 "c6.y"
                                                         { (yyval.nPtr) = opr(IF, 3, (yyvsp[-4].nPtr), (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1504 "y.tab.c"
     break;
 
   case 26: /* stmt: '{' stmt_list '}'  */
-#line 82 "c6.y"
+#line 88 "c6.y"
                                                         { (yyval.nPtr) = (yyvsp[-1].nPtr); }
 #line 1510 "y.tab.c"
     break;
 
   case 27: /* stmt_list: stmt  */
-#line 86 "c6.y"
+#line 92 "c6.y"
                                                         { (yyval.nPtr) = (yyvsp[0].nPtr); }
 #line 1516 "y.tab.c"
     break;
 
   case 28: /* stmt_list: stmt_list stmt  */
-#line 87 "c6.y"
+#line 93 "c6.y"
                                                         { (yyval.nPtr) = opr(';', 2, (yyvsp[-1].nPtr), (yyvsp[0].nPtr)); }
 #line 1522 "y.tab.c"
     break;
 
   case 29: /* expr: INTEGER  */
-#line 91 "c6.y"
+#line 97 "c6.y"
                                                         { (yyval.nPtr) = conInt((yyvsp[0].iValue)); }
 #line 1528 "y.tab.c"
     break;
 
   case 30: /* expr: CHARACTER  */
-#line 92 "c6.y"
+#line 98 "c6.y"
                                                         { (yyval.nPtr) = conChar((yyvsp[0].cValue)); }
 #line 1534 "y.tab.c"
     break;
 
   case 31: /* expr: STRING  */
-#line 93 "c6.y"
+#line 99 "c6.y"
                                                         { (yyval.nPtr) = conString((yyvsp[0].sValue)); }
 #line 1540 "y.tab.c"
     break;
 
   case 32: /* expr: VARIABLE  */
-#line 94 "c6.y"
+#line 100 "c6.y"
                                                         { (yyval.nPtr) = id((yyvsp[0].sValue)); }
 #line 1546 "y.tab.c"
     break;
 
   case 33: /* expr: VARIABLE '[' expr_list ']'  */
-#line 95 "c6.y"
+#line 101 "c6.y"
                                                         { (yyval.nPtr) = ida((yyvsp[-3].sValue), (yyvsp[-1].nPtr)); }
 #line 1552 "y.tab.c"
     break;
 
   case 34: /* expr: '-' expr  */
-#line 96 "c6.y"
+#line 102 "c6.y"
                                                         { (yyval.nPtr) = opr(UMINUS, 1, (yyvsp[0].nPtr)); }
 #line 1558 "y.tab.c"
     break;
 
   case 35: /* expr: expr '+' expr  */
-#line 97 "c6.y"
+#line 103 "c6.y"
                                                         { (yyval.nPtr) = opr('+', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1564 "y.tab.c"
     break;
 
   case 36: /* expr: expr '-' expr  */
-#line 98 "c6.y"
+#line 104 "c6.y"
                                                         { (yyval.nPtr) = opr('-', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1570 "y.tab.c"
     break;
 
   case 37: /* expr: expr '*' expr  */
-#line 99 "c6.y"
+#line 105 "c6.y"
                                                         { (yyval.nPtr) = opr('*', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1576 "y.tab.c"
     break;
 
   case 38: /* expr: expr '%' expr  */
-#line 100 "c6.y"
+#line 106 "c6.y"
                                                         { (yyval.nPtr) = opr('%', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1582 "y.tab.c"
     break;
 
   case 39: /* expr: expr '/' expr  */
-#line 101 "c6.y"
+#line 107 "c6.y"
                                                         { (yyval.nPtr) = opr('/', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1588 "y.tab.c"
     break;
 
   case 40: /* expr: expr '<' expr  */
-#line 102 "c6.y"
+#line 108 "c6.y"
                                                         { (yyval.nPtr) = opr('<', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1594 "y.tab.c"
     break;
 
   case 41: /* expr: expr '>' expr  */
-#line 103 "c6.y"
+#line 109 "c6.y"
                                                         { (yyval.nPtr) = opr('>', 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1600 "y.tab.c"
     break;
 
   case 42: /* expr: expr GE expr  */
-#line 104 "c6.y"
+#line 110 "c6.y"
                                                         { (yyval.nPtr) = opr(GE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1606 "y.tab.c"
     break;
 
   case 43: /* expr: expr LE expr  */
-#line 105 "c6.y"
+#line 111 "c6.y"
                                                         { (yyval.nPtr) = opr(LE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1612 "y.tab.c"
     break;
 
   case 44: /* expr: expr NE expr  */
-#line 106 "c6.y"
+#line 112 "c6.y"
                                                         { (yyval.nPtr) = opr(NE, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1618 "y.tab.c"
     break;
 
   case 45: /* expr: expr EQ expr  */
-#line 107 "c6.y"
+#line 113 "c6.y"
                                                         { (yyval.nPtr) = opr(EQ, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1624 "y.tab.c"
     break;
 
   case 46: /* expr: expr AND expr  */
-#line 108 "c6.y"
+#line 114 "c6.y"
                                                             { (yyval.nPtr) = opr(AND, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1630 "y.tab.c"
     break;
 
   case 47: /* expr: expr OR expr  */
-#line 109 "c6.y"
+#line 115 "c6.y"
                                                             { (yyval.nPtr) = opr(OR, 2, (yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1636 "y.tab.c"
     break;
 
   case 48: /* expr: '(' expr ')'  */
-#line 110 "c6.y"
+#line 116 "c6.y"
                                                         { (yyval.nPtr) = (yyvsp[-1].nPtr); }
 #line 1642 "y.tab.c"
     break;
 
   case 49: /* array_decl: ARRAY VARIABLE '[' int_list ']'  */
-#line 113 "c6.y"
+#line 119 "c6.y"
                                                         { (yyval.nPtr) = opr(ARRAY, 2, id((yyvsp[-3].sValue)), (yyvsp[-1].nPtr)); }
 #line 1648 "y.tab.c"
     break;
 
   case 50: /* array_decl: ARRAY VARIABLE '[' int_list ']' '=' expr  */
-#line 114 "c6.y"
+#line 120 "c6.y"
                                                         { (yyval.nPtr) = opr(ARRAY, 3, id((yyvsp[-5].sValue)), (yyvsp[-3].nPtr), (yyvsp[0].nPtr)); }
 #line 1654 "y.tab.c"
     break;
 
   case 51: /* int_list: INTEGER  */
-#line 117 "c6.y"
+#line 123 "c6.y"
                                                         { (yyval.nPtr) = ari(NULL, (yyvsp[0].iValue)); }
 #line 1660 "y.tab.c"
     break;
 
   case 52: /* int_list: int_list ',' INTEGER  */
-#line 118 "c6.y"
+#line 124 "c6.y"
                                                         { (yyval.nPtr) = ari((yyvsp[-2].nPtr), (yyvsp[0].iValue)); }
 #line 1666 "y.tab.c"
     break;
 
   case 53: /* expr_list: expr  */
-#line 121 "c6.y"
+#line 127 "c6.y"
                                                         { (yyval.nPtr) = are(NULL, (yyvsp[0].nPtr)); }
 #line 1672 "y.tab.c"
     break;
 
   case 54: /* expr_list: expr_list ',' expr  */
-#line 122 "c6.y"
+#line 128 "c6.y"
                                                         { (yyval.nPtr) = are((yyvsp[-2].nPtr), (yyvsp[0].nPtr)); }
 #line 1678 "y.tab.c"
     break;
@@ -1871,7 +1871,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 125 "c6.y"
+#line 131 "c6.y"
 
 
 #define SIZEOF_NODETYPE ((char *)&p->con - (char *)p)
@@ -2048,7 +2048,7 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    fprintf(stdout, "%s\n", s);
+    sprintf(output, "%s\n", s);
 }
 
 int main(int argc, char **argv) {
@@ -2062,12 +2062,22 @@ extern FILE* yyin;
     // Function table initialisation
     funcTable.count = 0;
 
+    // Prepare output buffers and pointers
+    output = malloc(sizeof(char) * 1000000);
+    wip = malloc(sizeof(char) * 1000000);
+    output_start = output;
+    wip_start = wip;
+
     // Stack pointer initialisation hack
-    printf("\tpush\tsp\n");
-    printf("\tpush\t10000\n");
-    printf("\tadd\n");
-    printf("\tpop\tsp\n");
+    output += sprintf(output, "\tpush\tsp\n");
+    output += sprintf(output, "\tpush\t10000\n");
+    output += sprintf(output, "\tadd\n");
+    output += sprintf(output, "\tpop\tsp\n");
 
     yyparse();
+
+    // Print the output
+    printf("%s", output_start);
+
     return 0;
 }
