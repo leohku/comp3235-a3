@@ -31,5 +31,11 @@ Development
         [X] Refactoring varlookup
     [X] geti, getc, gets n-d array support
 [ ] Functions decl and calls with no array as param (60%)
-    [ ] Scoping for var and arrays
-[ ] Functions can have arrays as params (10%)
+    [ ] Function declaration site
+        [ ] Delayed emission (snprintf to two buffers)
+        [ ] Code gen
+            [ ] Label shenanigans
+            [ ] Symtable entries with scoping
+            [ ] Expect global addresses for all array params (10%)
+    [ ] Function calling site
+        [ ] Pass global address for all array params (10%)
