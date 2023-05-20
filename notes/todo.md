@@ -40,6 +40,7 @@ Development
             [ ] Function body code gen
                 [X] Scope activation and deactivation
                 [ ] varlookup & arr_symgen refactoring to support local scopes
+                    [ ] varlookup emits full register
                 [ ] Local variable symtable entries
             [ ] "var" generation and WIP buffer emission
             [ ] Global variables denoted with "@"
@@ -50,3 +51,6 @@ Development
         [ ] Lexing and parsing
         [ ] Pass global address for all array params (10%)
     [ ] Support for n-d arrays as arguments using stack mirroring
+[ ] Test suite
+    [ ] Normal programs
+    [ ] AST error cases

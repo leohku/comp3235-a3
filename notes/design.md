@@ -60,3 +60,19 @@ f(x);           // call site knows f() accepts an array, so passes an address
 g(x);           // call site knows g() accepts a value, so passes a value
 
 The benefit of this behaviour is that pointer addresses are never exposed to end programmers using the language at all, which is of no use anyways in this language that has no concept of addresses.
+
+Behaviour of varlookup:
+Note it always returns a value, i.e. "sb[x], fp[y]", never an address, i.e. just x or y
+---
+Global scope:
+    offset in accumulator -> sb[ac]
+    static offset -> sb[n]
+Local scope:
+    Parameter passed by value (no offset calculation required in ac)
+        static offset -> fp[n]
+    Parameter passed by reference
+        offset in accumulator -> sb[ac]
+        static offset -> sb[n]
+    Local variable:
+        offset in accumulator -> fp[ac]
+        static offset -> fp[n]

@@ -14,7 +14,7 @@ int arr_symgen(char *var, nodeType *p);
 int func_symgen(char *name, nodeType *p);
 
 static int lbl = 0;
-static int scope = 0;   /* 0: global scope, <num>: entry index in funcTable */
+static int scope = 0; /* 0: global scope, <num>: entry index in funcTable */
 
 int ex(nodeType *p)
 {
@@ -39,25 +39,27 @@ int ex(nodeType *p)
         }
         break;
     case typeId:
-        {
+    {
         int offset = varlookup(p);
         if (offset == -1)
             output += sprintf(output, "\tpush\tsb[ac]\n");
         else
             output += sprintf(output, "\tpush\tsb[%d]\n", offset);
-        }
-        break;
+    }
+    break;
     case typeOpr:
         switch (p->opr.oper)
         {
-        int offset;         /* For storing result of varlookup */
+            int offset; /* For storing result of varlookup */
         case ARRAY:
             arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]);
-            if (p->opr.nops == 3) {
-                ex(p->opr.op[2]);                               /* Prepare the expression value */
+            if (p->opr.nops == 3)
+            {
+                ex(p->opr.op[2]); /* Prepare the expression value */
                 output += sprintf(output, "\tpop\tac\n");
-                int base = varlookup(p->opr.op[0]);             /* Compute base pointer */
-                for (int i = 0; i < p->opr.op[1]->ari.width; i++) {
+                int base = varlookup(p->opr.op[0]); /* Compute base pointer */
+                for (int i = 0; i < p->opr.op[1]->ari.width; i++)
+                {
                     output += sprintf(output, "\tpush\tac\n");
                     output += sprintf(output, "\tpop\tsb[%i]\n", base + i);
                 }
@@ -153,9 +155,9 @@ int ex(nodeType *p)
             ex(p->opr.op[1]);
             offset = varlookup(p->opr.op[0]);
             if (offset == -1)
-                output += sprintf(output, "\tpop\tsb[ac]\n");                  /* offset dynamically calculated */
+                output += sprintf(output, "\tpop\tsb[ac]\n"); /* offset dynamically calculated */
             else
-                output += sprintf(output, "\tpop\tsb[%d]\n", offset);          /* offset statically determined */
+                output += sprintf(output, "\tpop\tsb[%d]\n", offset); /* offset statically determined */
             break;
         case UMINUS:
             ex(p->opr.op[0]);
@@ -207,31 +209,33 @@ int ex(nodeType *p)
                 break;
             }
         }
-        case typeFunc:
-            lbl1 = lbl++;
-            lbl2 = lbl++;
-            output += sprintf(output, "\tjmp\tL%03d\n", lbl2);
-            output += sprintf(output, "L%03d:\n", lbl1);
-            scope = func_symgen(p->func.name, p->func.param);
-            // TODO: generate code for function body in WIP buffer
-            scope = 0;
-            output += sprintf(output, "\tret\n");
-            output += sprintf(output, "L%03d:\n", lbl2);
-            break;
-        case typeAri:
-        case typeAre:
-        case typePrm:
-            // Won't be running ex() on these node types
-            break;
-        
+        break;
+    case typeFunc:
+        lbl1 = lbl++;
+        lbl2 = lbl++;
+        output += sprintf(output, "\tjmp\tL%03d\n", lbl2);
+        output += sprintf(output, "L%03d:\n", lbl1);
+        scope = func_symgen(p->func.name, p->func.param);
+        // TODO: generate code for function body in WIP buffer
+        scope = 0;
+        output += sprintf(output, "\tret\n");
+        output += sprintf(output, "L%03d:\n", lbl2);
+        break;
+    case typeAri:
+    case typeAre:
+    case typePrm:
+        // Won't be running ex() on these node types
+        break;
     }
     return 0;
 }
 
-char *to_lower(char *str) {
+char *to_lower(char *str)
+{
     int len = strlen(str);
     char *new_str = malloc(len + 1);
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++)
+    {
         new_str[i] = tolower(str[i]);
     }
     new_str[len] = '\0';
@@ -243,17 +247,30 @@ char *to_lower(char *str) {
 // dynamic computation is required (even if the value
 // inside the [] is static). In this case, the result
 // is stored in the ac register.
-int varlookup(nodeType *p) {
+int varlookup(nodeType *p)
+{
     char *loweredVar = to_lower(p->id.name);
-    for (int i = 0; i < globalVarTable.count; i++) {
+    for (int i = 0; i < globalVarTable.count; i++)
+    {
         varSymEntry var = globalVarTable.variables[i];
-        if (strcmp(var.symbol, loweredVar) == 0) {
-            if (p->id.has_array_expr) {
+        if (strcmp(var.symbol, loweredVar) == 0)
+        {
+            if (p->id.has_array_expr)
+            {
+                if (var.ndim == 0)
+                {
+                    fprintf(stderr, "%s is not an array\n", var.symbol);
+                    exit(1);
+                }
                 output += sprintf(output, "\tpush\t%d\n", var.offset);
-                for (int j = 0; j < p->id.op->are.ndim; j++) {
-                    if (j == 0) {
+                for (int j = 0; j < p->id.op->are.ndim; j++)
+                {
+                    if (j == 0)
+                    {
                         ex(p->id.op->are.op[j]);
-                    } else {
+                    }
+                    else
+                    {
                         output += sprintf(output, "\tpush\t%i\n", var.dims[j]);
                         output += sprintf(output, "\tmul\n");
                         ex(p->id.op->are.op[j]);
@@ -268,18 +285,24 @@ int varlookup(nodeType *p) {
         }
     }
     // Declare on first use
-    globalVarTable.variables[globalVarTable.count].symbol = loweredVar;
-    globalVarTable.variables[globalVarTable.count].offset = globalVarTable.width;
+    varSymEntry *newEntry = &globalVarTable.variables[globalVarTable.count];
+    newEntry->symbol = loweredVar;
+    newEntry->ndim = 0;
+    newEntry->offset = globalVarTable.width;
     globalVarTable.count++;
     globalVarTable.width++;
     return globalVarTable.width - 1;
 }
 
-int arr_symgen(char *var, nodeType *p) {
+int arr_symgen(char *var, nodeType *p)
+{
     char *loweredVar = to_lower(var);
-    for (int i = 0; i < globalVarTable.count; i++) {
-        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0) {
-            output += sprintf(output, "array \"%s\" already declared\n", var);
+    for (int i = 0; i < globalVarTable.count; i++)
+    {
+        if (strcmp(globalVarTable.variables[i].symbol, loweredVar) == 0)
+        {
+            fprintf(stderr, "array \"%s\" already declared\n", var);
+            exit(1);
         }
     }
     varSymEntry *newEntry = &globalVarTable.variables[globalVarTable.count];
@@ -294,17 +317,22 @@ int arr_symgen(char *var, nodeType *p) {
 
 // Creates a new function symbol table entry, populates name
 // and parameter table, and returns the index of the new entry
-int func_symgen(char *name, nodeType *p) {
+int func_symgen(char *name, nodeType *p)
+{
     char *loweredName = to_lower(name);
-    for (int i = 0; i < funcTable.count; i++) {
-        if (strcmp(funcTable.functions[i].symbol, loweredName) == 0) {
-            output += sprintf(output, "function \"%s\" already declared\n", name);
+    for (int i = 0; i < funcTable.count; i++)
+    {
+        if (strcmp(funcTable.functions[i].symbol, loweredName) == 0)
+        {
+            fprintf(stderr, "function \"%s\" already declared\n", name);
+            exit(1);
         }
     }
     funcSymEntry *newEntry = &funcTable.functions[funcTable.count];
     newEntry->symbol = loweredName;
     newEntry->prmtable.count = p->prm.nparams;
-    for (int i = 0; i < p->prm.nparams; i++) {
+    for (int i = 0; i < p->prm.nparams; i++)
+    {
         newEntry->prmtable.parameters[i].symbol = to_lower(p->prm.op[i]->id.name);
         newEntry->prmtable.parameters[i].is_array = p->prm.op[i]->id.has_array_expr;
     }
