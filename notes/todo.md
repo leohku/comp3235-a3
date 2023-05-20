@@ -35,8 +35,13 @@ Development
         [X] Delayed emission (sprintf to two buffers)
         [X] Lexing and parsing
         [ ] Code gen
-            [ ] Label shenanigans
-            [ ] Symtable entries with scoping
+            [X] Label shenanigans
+            [X] Function symtable entry - name and params
+            [ ] Function body code gen
+                [X] Scope activation and deactivation
+                [ ] varlookup & arr_symgen refactoring to support local scopes
+                [ ] Local variable symtable entries
+            [ ] "var" generation and WIP buffer emission
             [ ] Global variables denoted with "@"
                 [ ] Lexing and parsing
             [ ] Expect global addresses for all array params (10%)

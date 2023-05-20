@@ -10,7 +10,8 @@
     call    L000
     puti
     jmp     L001
-L000: var 5,0
+L000:
+    var 5,0
     push    fp[0]
     push    fp[1]
     add

@@ -12,7 +12,7 @@ Notes:
 
 - Need backpatching to patch labels
 - For bonus (b), fns can have arrays as params, no factor for local vars - they are still declared the same way - only affects passed in arguments
-- Function declarations need to have `jmp L001; L000: var x,y; ...; ret; L001: ...`. Note that L001 line cannot be empty because PC isn't incremented there
+- Function declarations need to have `jmp L001; L000: var x,y; ...; ret; L001: ...`.
 - Function calls are translated to `push .; push.; call L...;`
 - Variables either use sb[] (global) or fp[] (local) depending on location in symtable
 

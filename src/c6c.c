@@ -11,8 +11,10 @@ funcSymTable funcTable;
 char *to_lower(char *str);
 int varlookup(nodeType *p);
 int arr_symgen(char *var, nodeType *p);
+int func_symgen(char *name, nodeType *p);
 
-static int lbl;
+static int lbl = 0;
+static int scope = 0;   /* 0: global scope, <num>: entry index in funcTable */
 
 int ex(nodeType *p)
 {
@@ -206,7 +208,15 @@ int ex(nodeType *p)
             }
         }
         case typeFunc:
-            // TODO: Code gen for function definitions
+            lbl1 = lbl++;
+            lbl2 = lbl++;
+            output += sprintf(output, "\tjmp\tL%03d\n", lbl2);
+            output += sprintf(output, "L%03d:\n", lbl1);
+            scope = func_symgen(p->func.name, p->func.param);
+            // TODO: generate code for function body in WIP buffer
+            scope = 0;
+            output += sprintf(output, "\tret\n");
+            output += sprintf(output, "L%03d:\n", lbl2);
             break;
         case typeAri:
         case typeAre:
@@ -280,4 +290,24 @@ int arr_symgen(char *var, nodeType *p) {
     globalVarTable.count++;
     globalVarTable.width += p->ari.width;
     return globalVarTable.width - p->ari.width;
+}
+
+// Creates a new function symbol table entry, populates name
+// and parameter table, and returns the index of the new entry
+int func_symgen(char *name, nodeType *p) {
+    char *loweredName = to_lower(name);
+    for (int i = 0; i < funcTable.count; i++) {
+        if (strcmp(funcTable.functions[i].symbol, loweredName) == 0) {
+            output += sprintf(output, "function \"%s\" already declared\n", name);
+        }
+    }
+    funcSymEntry *newEntry = &funcTable.functions[funcTable.count];
+    newEntry->symbol = loweredName;
+    newEntry->prmtable.count = p->prm.nparams;
+    for (int i = 0; i < p->prm.nparams; i++) {
+        newEntry->prmtable.parameters[i].symbol = to_lower(p->prm.op[i]->id.name);
+        newEntry->prmtable.parameters[i].is_array = p->prm.op[i]->id.has_array_expr;
+    }
+    funcTable.count++;
+    return funcTable.count - 1;
 }

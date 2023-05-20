@@ -17,10 +17,21 @@ typedef struct {
     varSymEntry variables[100]; /* array of variables, max 100 */
 } varSymTable;
 
+/* parameter symtable */
+typedef struct {
+    char *symbol;
+    bool is_array;
+} prmSymEntry;
+
+typedef struct {
+    int count;                  /* number of parameters */
+    prmSymEntry parameters[10]; /* array of parameters, max 10 */
+} prmSymTable;
+
 /* function symtable */
 typedef struct {
     char *symbol;
-    varSymTable argtable;
+    prmSymTable prmtable;
     varSymTable vartable;
 } funcSymEntry;
 
@@ -93,5 +104,4 @@ extern char *output;
 extern char *wip;
 extern char *wip_start;
 extern varSymTable globalVarTable;
-extern varSymTable localVarTable;
 extern funcSymTable funcTable;
