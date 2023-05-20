@@ -33,7 +33,7 @@ Development
 [ ] Functions decl and calls with no array as param (60%)
     [ ] Function declaration site
         [X] Delayed emission (sprintf to two buffers)
-        [ ] Lexing and parsing
+        [X] Lexing and parsing
         [ ] Code gen
             [ ] Label shenanigans
             [ ] Symtable entries with scoping
@@ -42,5 +42,6 @@ Development
             [ ] Expect global addresses for all array params (10%)
             [ ] Return behaviour (ret for all with optional return value)
     [ ] Function calling site
+        [ ] Lexing and parsing
         [ ] Pass global address for all array params (10%)
     [ ] Support for n-d arrays as arguments using stack mirroring

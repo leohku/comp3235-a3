@@ -71,15 +71,16 @@ extern int yydebug;
     PUTS = 272,                    /* PUTS  */
     PUTS_ = 273,                   /* PUTS_  */
     ARRAY = 274,                   /* ARRAY  */
-    IFX = 275,                     /* IFX  */
-    ELSE = 276,                    /* ELSE  */
-    AND = 277,                     /* AND  */
-    OR = 278,                      /* OR  */
-    GE = 279,                      /* GE  */
-    LE = 280,                      /* LE  */
-    EQ = 281,                      /* EQ  */
-    NE = 282,                      /* NE  */
-    UMINUS = 283                   /* UMINUS  */
+    FUNC = 275,                    /* FUNC  */
+    IFX = 276,                     /* IFX  */
+    ELSE = 277,                    /* ELSE  */
+    AND = 278,                     /* AND  */
+    OR = 279,                      /* OR  */
+    GE = 280,                      /* GE  */
+    LE = 281,                      /* LE  */
+    EQ = 282,                      /* EQ  */
+    NE = 283,                      /* NE  */
+    UMINUS = 284                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -105,28 +106,29 @@ extern int yydebug;
 #define PUTS 272
 #define PUTS_ 273
 #define ARRAY 274
-#define IFX 275
-#define ELSE 276
-#define AND 277
-#define OR 278
-#define GE 279
-#define LE 280
-#define EQ 281
-#define NE 282
-#define UMINUS 283
+#define FUNC 275
+#define IFX 276
+#define ELSE 277
+#define AND 278
+#define OR 279
+#define GE 280
+#define LE 281
+#define EQ 282
+#define NE 283
+#define UMINUS 284
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 30 "c6.y"
+#line 32 "c6.y"
 
     int iValue;                 /* integer value */
     char cValue;                /* character value */
     char *sValue;               /* string value */
     nodeType *nPtr;             /* node pointer */
 
-#line 130 "y.tab.h"
+#line 132 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -205,8 +205,12 @@ int ex(nodeType *p)
                 break;
             }
         }
+        case typeFunc:
+            // TODO: Code gen for function definitions
+            break;
         case typeAri:
         case typeAre:
+        case typePrm:
             // Won't be running ex() on these node types
             break;
         

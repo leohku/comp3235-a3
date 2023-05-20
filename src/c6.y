@@ -9,6 +9,8 @@
 /* prototypes */
 nodeType *ari(nodeType *prev, int value);
 nodeType *are(nodeType *prev, nodeType *exp);
+nodeType *prm(nodeType *prev, nodeType *param);
+nodeType *func(char *name, nodeType *param, nodeType *body);
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(char *value);
 nodeType *ida(char *value, nodeType *op);
@@ -39,7 +41,7 @@ char *wip_start;
 %token <sValue> STRING
 %token <sValue> VARIABLE
 %token FOR WHILE IF GETI GETC GETS PUTI PUTI_ PUTC PUTC_ PUTS PUTS_
-%token ARRAY
+%token ARRAY FUNC
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -50,7 +52,7 @@ char *wip_start;
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl int_list expr_list
+%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list prm_list
 
 %%
 
@@ -60,32 +62,33 @@ program:
 
 function:
           function stmt                                 { ex($2); freeNode($2); }
+        | function func_decl                            { ex($2); freeNode($2); }
         | /* NULL */
         ;
 
 stmt:
-          ';'                                           { $$ = opr(';', 2, NULL, NULL); }
-        | expr ';'                                      { $$ = $1; }
-        | array_decl ';'                                { $$ = $1; }
-	    | GETI '(' VARIABLE ')' ';'		                { $$ = opr(GETI, 1, id($3)); }
-        | GETI '(' VARIABLE '[' expr_list ']' ')' ';'	{ $$ = opr(GETI, 1, ida($3, $5)); }
-        | GETC '(' VARIABLE ')' ';'		                { $$ = opr(GETC, 1, id($3)); }
-        | GETC '(' VARIABLE '[' expr_list ']' ')' ';'	{ $$ = opr(GETC, 1, ida($3, $5)); }
-        | GETS '(' VARIABLE ')' ';'		                { $$ = opr(GETS, 1, id($3)); }
-        | GETS '(' VARIABLE '[' expr_list ']' ')' ';'	{ $$ = opr(GETS, 1, ida($3, $5)); }
-        | PUTI '(' expr ')' ';'		                    { $$ = opr(PUTI, 1, $3); }
-        | PUTI_ '(' expr ')' ';'		                { $$ = opr(PUTI_, 1, $3); }
-        | PUTC '(' expr ')' ';'		                    { $$ = opr(PUTC, 1, $3); }
-        | PUTC_ '(' expr ')' ';'		                { $$ = opr(PUTC_, 1, $3); }
-        | PUTS '(' expr ')' ';'		                    { $$ = opr(PUTS, 1, $3); }
-        | PUTS_ '(' expr ')' ';'		                { $$ = opr(PUTS_, 1, $3); }
-        | VARIABLE '=' expr ';'                         { $$ = opr('=', 2, id($1), $3); }
-        | VARIABLE '[' expr_list ']' '=' expr ';'       { $$ = opr('=', 2, ida($1, $3), $6); }
-	    | FOR '(' stmt stmt stmt ')' stmt               { $$ = opr(FOR, 4, $3, $4, $5, $7); }
-        | WHILE '(' expr ')' stmt                       { $$ = opr(WHILE, 2, $3, $5); }
-        | IF '(' expr ')' stmt %prec IFX                { $$ = opr(IF, 2, $3, $5); }
-        | IF '(' expr ')' stmt ELSE stmt                { $$ = opr(IF, 3, $3, $5, $7); }
-        | '{' stmt_list '}'                             { $$ = $2; }
+          ';'                                               { $$ = opr(';', 2, NULL, NULL); }
+        | expr ';'                                          { $$ = $1; }
+        | array_decl ';'                                    { $$ = $1; }
+	    | GETI '(' VARIABLE ')' ';'		                    { $$ = opr(GETI, 1, id($3)); }
+        | GETI '(' VARIABLE '[' expr_list ']' ')' ';'	    { $$ = opr(GETI, 1, ida($3, $5)); }
+        | GETC '(' VARIABLE ')' ';'		                    { $$ = opr(GETC, 1, id($3)); }
+        | GETC '(' VARIABLE '[' expr_list ']' ')' ';'	    { $$ = opr(GETC, 1, ida($3, $5)); }
+        | GETS '(' VARIABLE ')' ';'		                    { $$ = opr(GETS, 1, id($3)); }
+        | GETS '(' VARIABLE '[' expr_list ']' ')' ';'	    { $$ = opr(GETS, 1, ida($3, $5)); }
+        | PUTI '(' expr ')' ';'		                        { $$ = opr(PUTI, 1, $3); }
+        | PUTI_ '(' expr ')' ';'		                    { $$ = opr(PUTI_, 1, $3); }
+        | PUTC '(' expr ')' ';'		                        { $$ = opr(PUTC, 1, $3); }
+        | PUTC_ '(' expr ')' ';'		                    { $$ = opr(PUTC_, 1, $3); }
+        | PUTS '(' expr ')' ';'		                        { $$ = opr(PUTS, 1, $3); }
+        | PUTS_ '(' expr ')' ';'		                    { $$ = opr(PUTS_, 1, $3); }
+        | VARIABLE '=' expr ';'                             { $$ = opr('=', 2, id($1), $3); }
+        | VARIABLE '[' expr_list ']' '=' expr ';'           { $$ = opr('=', 2, ida($1, $3), $6); }
+	    | FOR '(' stmt stmt stmt ')' stmt                   { $$ = opr(FOR, 4, $3, $4, $5, $7); }
+        | WHILE '(' expr ')' stmt                           { $$ = opr(WHILE, 2, $3, $5); }
+        | IF '(' expr ')' stmt %prec IFX                    { $$ = opr(IF, 2, $3, $5); }
+        | IF '(' expr ')' stmt ELSE stmt                    { $$ = opr(IF, 3, $3, $5, $7); }
+        | '{' stmt_list '}'                                 { $$ = $2; }
         ;
 
 stmt_list:
@@ -120,12 +123,20 @@ array_decl: ARRAY VARIABLE '[' int_list ']'             { $$ = opr(ARRAY, 2, id(
         | ARRAY VARIABLE '[' int_list ']' '=' expr      { $$ = opr(ARRAY, 3, id($2), $4, $7); }
         ;
 
+func_decl: FUNC VARIABLE '(' prm_list ')' '{' stmt_list '}' { $$ = func($2, $4, $7); }
+        ;
+
 int_list: INTEGER                                       { $$ = ari(NULL, $1); }
         | int_list ',' INTEGER                          { $$ = ari($1, $3); }
         ;
 
 expr_list: expr                                         { $$ = are(NULL, $1); }
         | expr_list ',' expr                            { $$ = are($1, $3); }
+        ;
+
+prm_list: /* NULL */                                    { $$ = prm(NULL, NULL); }
+        | prm_list ',' VARIABLE                         { $$ = prm($1, id($3)); }
+        | prm_list ',' VARIABLE '[' ']'                 { $$ = prm($1, ida($3, NULL)); }
         ;
 
 %%
@@ -179,6 +190,46 @@ nodeType *are(nodeType *prev, nodeType *exp) {
         memcpy(p->are.op, prev->are.op, sizeof(nodeType *) * prev->are.ndim);
         p->are.op[p->are.ndim - 1] = exp;
     }
+
+    return p;
+}
+
+nodeType *prm(nodeType *prev, nodeType *param) {
+    nodeType *p;
+    size_t nodeSize;
+
+    /* allocate node */
+    nodeSize = SIZEOF_NODETYPE + sizeof(prmNodeType);
+    if ((p = malloc(nodeSize)) == NULL)
+        yyerror("out of memory");
+
+    /* copy information */
+    p->type = typePrm;
+    if (param == NULL) {
+        p->prm.nparams = 0;
+    } else {
+        p->prm.nparams = prev->prm.nparams + 1;
+        memcpy(p->prm.op, prev->prm.op, sizeof(nodeType *) * prev->prm.nparams);
+        p->prm.op[p->prm.nparams - 1] = param;
+    }
+
+    return p;
+}
+
+nodeType *func(char *name, nodeType *param, nodeType *body) {
+    nodeType *p;
+    size_t nodeSize;
+
+    /* allocate node */
+    nodeSize = SIZEOF_NODETYPE + sizeof(funcNodeType);
+    if ((p = malloc(nodeSize)) == NULL)
+        yyerror("out of memory");
+
+    /* copy information */
+    p->type = typeFunc;
+    p->func.name = name;
+    p->func.param = param;
+    p->func.body = body;
 
     return p;
 }

@@ -26,6 +26,7 @@ char* null_terminate(char* str);
 "puts"          return PUTS;
 "puts_"         return PUTS_;
 "array"         return ARRAY;
+"func"          return FUNC;
 
 [a-zA-Z][a-zA-Z0-9]{0,19}       { 
                                     yylval.sValue = null_terminate(yytext);

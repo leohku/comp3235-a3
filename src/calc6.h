@@ -1,6 +1,6 @@
 #include <stdbool.h>
 
-typedef enum { typeCon, typeId, typeOpr, typeAri, typeAre } nodeEnum;
+typedef enum { typeCon, typeId, typeOpr, typeAri, typeAre, typePrm, typeFunc } nodeEnum;
 typedef enum { conTypeInt, conTypeChar, conTypeString } conTypeEnum;
 
 /* variable symtable */
@@ -62,6 +62,17 @@ typedef struct {
     struct nodeTypeTag *op[10];
 } areNodeType;                  /* array invokation expression list */
 
+typedef struct {
+    int nparams;
+    struct nodeTypeTag *op[10];
+} prmNodeType;                  /* function definition parameter list */
+
+typedef struct {
+    char *name;
+    struct nodeTypeTag *param;
+    struct nodeTypeTag *body;
+} funcNodeType;                 /* function definition */
+
 typedef struct nodeTypeTag {
     nodeEnum type;              /* type of node */
 
@@ -73,6 +84,8 @@ typedef struct nodeTypeTag {
         oprNodeType opr;        /* operators */
         ariNodeType ari;        /* array initializer */
         areNodeType are;        /* array invokation */
+        prmNodeType prm;        /* function definition parameter list */
+        funcNodeType func;      /* function definition */
     };
 } nodeType;
 
