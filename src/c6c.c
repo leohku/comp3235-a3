@@ -51,7 +51,8 @@ int ex(nodeType *p)
         {
         case ARRAY:
         {
-            int base = arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]) + funcTable.functions[scope].prmtable.count;
+            int offset = scope == -1 ? 0 : funcTable.functions[scope].prmtable.count;
+            int base = arr_symgen(p->opr.op[0]->id.name, p->opr.op[1]) + offset;
             if (p->opr.nops == 3)
             {
                 ex(p->opr.op[2]); /* Prepare the expression value */
