@@ -355,7 +355,7 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    sprintf(output, "%s\n", s);
+    output += sprintf(output, "%s\n", s);
 }
 
 int main(int argc, char **argv) {
