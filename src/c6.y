@@ -130,6 +130,8 @@ expr_list: expr                                         { $$ = are(NULL, $1); }
         ;
 
 prm_list: /* NULL */                                    { $$ = prm(NULL, NULL); }
+        | VARIABLE                                      { $$ = prm(NULL, id($1)); }
+        | VARIABLE '[' ']'                              { $$ = prm(NULL, ida($1, NULL)); }
         | prm_list ',' VARIABLE                         { $$ = prm($1, id($3)); }
         | prm_list ',' VARIABLE '[' ']'                 { $$ = prm($1, ida($3, NULL)); }
         ;
@@ -203,9 +205,14 @@ nodeType *prm(nodeType *prev, nodeType *param) {
     if (param == NULL) {
         p->prm.nparams = 0;
     } else {
-        p->prm.nparams = prev->prm.nparams + 1;
-        memcpy(p->prm.op, prev->prm.op, sizeof(nodeType *) * prev->prm.nparams);
-        p->prm.op[p->prm.nparams - 1] = param;
+        if (prev == NULL) {
+            p->prm.nparams = 1;
+            p->prm.op[0] = param;
+        } else {
+            p->prm.nparams = prev->prm.nparams + 1;
+            memcpy(p->prm.op, prev->prm.op, sizeof(nodeType *) * prev->prm.nparams);
+            p->prm.op[p->prm.nparams - 1] = param;
+        }
     }
 
     return p;
@@ -350,7 +357,7 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    output += sprintf(output, "%s\n", s);
+    head += sprintf(head, "%s\n", s);
 }
 
 int main(int argc, char **argv) {
@@ -365,16 +372,15 @@ extern FILE* yyin;
     funcTable.count = 0;
 
     // Prepare output buffers and pointers
-    output = malloc(sizeof(char) * 1000000);
+    output_start = malloc(sizeof(char) * 1000000);
     wip = malloc(sizeof(char) * 1000000);
-    output_start = output;
-    wip_start = wip;
+    head = output_start;
 
     // Stack pointer initialisation hack
-    output += sprintf(output, "\tpush\tsp\n");
-    output += sprintf(output, "\tpush\t10000\n");
-    output += sprintf(output, "\tadd\n");
-    output += sprintf(output, "\tpop\tsp\n");
+    head += sprintf(head, "\tpush\tsp\n");
+    head += sprintf(head, "\tpush\t10000\n");
+    head += sprintf(head, "\tadd\n");
+    head += sprintf(head, "\tpop\tsp\n");
 
     yyparse();
 

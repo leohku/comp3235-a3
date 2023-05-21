@@ -46,12 +46,12 @@ Development
                     [X] arr_symgen refactoring
                     [X] varlookup emits full register
                     [X] varlookup consumer refactoring to take register
-                [ ] "var" generation and WIP buffer emission
-                [ ] Output buffer switching depending on scope
+                [X] "var" generation and WIP buffer emission
+                [X] Output buffer switching depending on scope
                 [ ] Return behaviour (including ret with optional return value)
             [ ] Global variables denoted with "@"
                 [ ] Lexing and parsing
-            [ ] Expect global addresses for all array params (10%)
+            [X] Expect global addresses for all array params (10%)
     [ ] Function calling site
         [ ] Lexing and parsing
         [ ] Pass global address for all array params (10%)

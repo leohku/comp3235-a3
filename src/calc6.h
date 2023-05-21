@@ -107,9 +107,9 @@ typedef struct {
     int offset;                 /* -1: in ac, else statically determined */
 } tableSearchResult;
 
-extern char *output;
+extern char *head;
 extern char *output_start;
+extern char *output_saved;
 extern char *wip;
-extern char *wip_start;
 extern varSymTable globalVarTable;
 extern funcSymTable funcTable;

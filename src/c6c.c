@@ -17,10 +17,10 @@ int arr_symgen(char *var, nodeType *p);
 int func_symgen(char *name, nodeType *p);
 
 /* output buffers and pointers */
-char *output;
+char *head;
 char *output_start;
+char *output_saved;
 char *wip;
-char *wip_start;
 
 static int lbl = 0;
 static int scope = -1; /* -1: global scope, <num>: entry index in funcTable */
@@ -38,20 +38,20 @@ int ex(nodeType *p)
         switch (p->con.conType)
         {
         case conTypeInt:
-            output += sprintf(output, "\tpush\t%d\n", p->con.intValue);
+            head += sprintf(head, "\tpush\t%d\n", p->con.intValue);
             break;
         case conTypeChar:
-            output += sprintf(output, "\tpush\t'%c'\n", p->con.charValue);
+            head += sprintf(head, "\tpush\t'%c'\n", p->con.charValue);
             break;
         case conTypeString:
-            output += sprintf(output, "\tpush\t\"%s\"\n", p->con.strValue);
+            head += sprintf(head, "\tpush\t\"%s\"\n", p->con.strValue);
             break;
         }
         break;
     case typeId:
     {
         rpos = varlookup(p);
-        output += sprintf(output, "\tpush\t%s\n", rpos);
+        head += sprintf(head, "\tpush\t%s\n", rpos);
     }
     break;
     case typeOpr:
@@ -64,100 +64,100 @@ int ex(nodeType *p)
             if (p->opr.nops == 3)
             {
                 ex(p->opr.op[2]); /* Prepare the expression value */
-                output += sprintf(output, "\tpop\tac\n");
+                head += sprintf(head, "\tpop\tac\n");
                 for (int i = 0; i < p->opr.op[1]->ari.width; i++)
                 {
-                    output += sprintf(output, "\tpush\tac\n");
-                    output += sprintf(output, "\tpop\t%s[%i]\n", scope == -1 ? "sb" : "fp", base + i);
+                    head += sprintf(head, "\tpush\tac\n");
+                    head += sprintf(head, "\tpop\t%s[%i]\n", scope == -1 ? "sb" : "fp", base + i);
                 }
             }
         }
         break;
         case FOR:
             ex(p->opr.op[0]);
-            output += sprintf(output, "L%03d:\n", lblx = lbl++);
+            head += sprintf(head, "L%03d:\n", lblx = lbl++);
             ex(p->opr.op[1]);
-            output += sprintf(output, "\tj0\tL%03d\n", lbly = lbl++);
+            head += sprintf(head, "\tj0\tL%03d\n", lbly = lbl++);
             ex(p->opr.op[3]);
             ex(p->opr.op[2]);
-            output += sprintf(output, "\tjmp\tL%03d\n", lblx);
-            output += sprintf(output, "L%03d:\n", lbly);
+            head += sprintf(head, "\tjmp\tL%03d\n", lblx);
+            head += sprintf(head, "L%03d:\n", lbly);
             break;
         case WHILE:
-            output += sprintf(output, "L%03d:\n", lbl1 = lbl++);
+            head += sprintf(head, "L%03d:\n", lbl1 = lbl++);
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tj0\tL%03d\n", lbl2 = lbl++);
+            head += sprintf(head, "\tj0\tL%03d\n", lbl2 = lbl++);
             ex(p->opr.op[1]);
-            output += sprintf(output, "\tjmp\tL%03d\n", lbl1);
-            output += sprintf(output, "L%03d:\n", lbl2);
+            head += sprintf(head, "\tjmp\tL%03d\n", lbl1);
+            head += sprintf(head, "L%03d:\n", lbl2);
             break;
         case IF:
             ex(p->opr.op[0]);
             if (p->opr.nops > 2)
             {
                 /* if else */
-                output += sprintf(output, "\tj0\tL%03d\n", lbl1 = lbl++);
+                head += sprintf(head, "\tj0\tL%03d\n", lbl1 = lbl++);
                 ex(p->opr.op[1]);
-                output += sprintf(output, "\tjmp\tL%03d\n", lbl2 = lbl++);
-                output += sprintf(output, "L%03d:\n", lbl1);
+                head += sprintf(head, "\tjmp\tL%03d\n", lbl2 = lbl++);
+                head += sprintf(head, "L%03d:\n", lbl1);
                 ex(p->opr.op[2]);
-                output += sprintf(output, "L%03d:\n", lbl2);
+                head += sprintf(head, "L%03d:\n", lbl2);
             }
             else
             {
                 /* if */
-                output += sprintf(output, "\tj0\tL%03d\n", lbl1 = lbl++);
+                head += sprintf(head, "\tj0\tL%03d\n", lbl1 = lbl++);
                 ex(p->opr.op[1]);
-                output += sprintf(output, "L%03d:\n", lbl1);
+                head += sprintf(head, "L%03d:\n", lbl1);
             }
             break;
         case GETI:
-            output += sprintf(output, "\tgeti\n");
+            head += sprintf(head, "\tgeti\n");
             rpos = varlookup(p->opr.op[0]);
-            output += sprintf(output, "\tpop\t%s\n", rpos);
+            head += sprintf(head, "\tpop\t%s\n", rpos);
             break;
         case GETC:
-            output += sprintf(output, "\tgetc\n");
+            head += sprintf(head, "\tgetc\n");
             rpos = varlookup(p->opr.op[0]);
-            output += sprintf(output, "\tpop\t%s\n", rpos);
+            head += sprintf(head, "\tpop\t%s\n", rpos);
             break;
         case GETS:
-            output += sprintf(output, "\tgets\n");
+            head += sprintf(head, "\tgets\n");
             rpos = varlookup(p->opr.op[0]);
-            output += sprintf(output, "\tpop\t%s\n", rpos);
+            head += sprintf(head, "\tpop\t%s\n", rpos);
             break;
         case PUTI:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tputi\n");
+            head += sprintf(head, "\tputi\n");
             break;
         case PUTI_:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tputi_\n");
+            head += sprintf(head, "\tputi_\n");
             break;
         case PUTC:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tputc\n");
+            head += sprintf(head, "\tputc\n");
             break;
         case PUTC_:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tputc_\n");
+            head += sprintf(head, "\tputc_\n");
             break;
         case PUTS:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tputs\n");
+            head += sprintf(head, "\tputs\n");
             break;
         case PUTS_:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tputs_\n");
+            head += sprintf(head, "\tputs_\n");
             break;
         case '=':
             ex(p->opr.op[1]);
             rpos = varlookup(p->opr.op[0]);
-            output += sprintf(output, "\tpop\t%s\n", rpos);
+            head += sprintf(head, "\tpop\t%s\n", rpos);
             break;
         case UMINUS:
             ex(p->opr.op[0]);
-            output += sprintf(output, "\tneg\n");
+            head += sprintf(head, "\tneg\n");
             break;
         default:
             ex(p->opr.op[0]);
@@ -165,43 +165,43 @@ int ex(nodeType *p)
             switch (p->opr.oper)
             {
             case '+':
-                output += sprintf(output, "\tadd\n");
+                head += sprintf(head, "\tadd\n");
                 break;
             case '-':
-                output += sprintf(output, "\tsub\n");
+                head += sprintf(head, "\tsub\n");
                 break;
             case '*':
-                output += sprintf(output, "\tmul\n");
+                head += sprintf(head, "\tmul\n");
                 break;
             case '/':
-                output += sprintf(output, "\tdiv\n");
+                head += sprintf(head, "\tdiv\n");
                 break;
             case '%':
-                output += sprintf(output, "\tmod\n");
+                head += sprintf(head, "\tmod\n");
                 break;
             case '<':
-                output += sprintf(output, "\tcompLT\n");
+                head += sprintf(head, "\tcompLT\n");
                 break;
             case '>':
-                output += sprintf(output, "\tcompGT\n");
+                head += sprintf(head, "\tcompGT\n");
                 break;
             case GE:
-                output += sprintf(output, "\tcompGE\n");
+                head += sprintf(head, "\tcompGE\n");
                 break;
             case LE:
-                output += sprintf(output, "\tcompLE\n");
+                head += sprintf(head, "\tcompLE\n");
                 break;
             case NE:
-                output += sprintf(output, "\tcompNE\n");
+                head += sprintf(head, "\tcompNE\n");
                 break;
             case EQ:
-                output += sprintf(output, "\tcompEQ\n");
+                head += sprintf(head, "\tcompEQ\n");
                 break;
             case AND:
-                output += sprintf(output, "\tand\n");
+                head += sprintf(head, "\tand\n");
                 break;
             case OR:
-                output += sprintf(output, "\tor\n");
+                head += sprintf(head, "\tor\n");
                 break;
             }
         }
@@ -209,18 +209,25 @@ int ex(nodeType *p)
     case typeFunc:
         lbl1 = lbl++;
         lbl2 = lbl++;
-        output += sprintf(output, "\tjmp\tL%03d\n", lbl2);
-        output += sprintf(output, "L%03d:\n", lbl1);
+        head += sprintf(head, "\tjmp\tL%03d\n", lbl2);
+        head += sprintf(head, "L%03d:\n", lbl1);
+
         scope = func_symgen(p->func.name, p->func.param);
-        // Generate function body in WIP buffer
-        ex(p->func.body);
-        // TODO: Generate var line
-
+        int temp = scope;
+        output_saved = head;
+        head = wip;
+        ex(p->func.body);   /* generate function body in WIP buffer */
         scope = -1;
-        // TODO: Write WIP buffer to output buffer
+        head = output_saved;
 
-        output += sprintf(output, "\tret\n");
-        output += sprintf(output, "L%03d:\n", lbl2);
+        int param_count = funcTable.functions[temp].prmtable.count;
+        int var_width = funcTable.functions[temp].vartable.width;
+        head += sprintf(head, "\tvar %i,%i\n", param_count, var_width); /* generate var statement in output buffer */
+
+        head += sprintf(head, "%s", wip);   /* copy WIP buffer to output buffer */
+
+        head += sprintf(head, "\tret\n");
+        head += sprintf(head, "L%03d:\n", lbl2);
         break;
     case typeAri:
     case typeAre:
@@ -247,6 +254,7 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
 {
     tableSearchResult *result = malloc(sizeof(tableSearchResult));
     result->reg = is_global ? "sb" : "fp";
+    int param_offset = is_global ? 0 : funcTable.functions[scope].prmtable.count;
 
     char *loweredVar = to_lower(p->id.name);
     for (int i = 0; i < table->count; i++)
@@ -262,7 +270,7 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
                     fprintf(stderr, "%s is not an array\n", var->symbol);
                     exit(1);
                 }
-                output += sprintf(output, "\tpush\t%d\n", var->offset);
+                head += sprintf(head, "\tpush\t%d\n", var->offset + param_offset);
                 for (int j = 0; j < p->id.op->are.ndim; j++)
                 {
                     if (j == 0)
@@ -271,19 +279,19 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
                     }
                     else
                     {
-                        output += sprintf(output, "\tpush\t%i\n", var->dims[j]);
-                        output += sprintf(output, "\tmul\n");
+                        head += sprintf(head, "\tpush\t%i\n", var->dims[j]);
+                        head += sprintf(head, "\tmul\n");
                         ex(p->id.op->are.op[j]);
-                        output += sprintf(output, "\tadd\n");
+                        head += sprintf(head, "\tadd\n");
                     }
                 }
-                output += sprintf(output, "\tadd\n");
-                output += sprintf(output, "\tpop\tac\n");
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
             }
             else
             {
-                result->offset = var->offset; /* offset statically determined */
+                result->offset = var->offset + param_offset; /* offset statically determined */
             }
             return result;
         }
@@ -315,18 +323,18 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
                     fprintf(stderr, "n-d array indexing not supported for parameters yet\n");
                     exit(1);
                 }
-                output += sprintf(output, "\tpush\tfp[%d]\n", i);
+                head += sprintf(head, "\tpush\tfp[%d]\n", i);
                 ex(p->id.op->are.op[0]);
-                output += sprintf(output, "\tadd\n");
-                output += sprintf(output, "\tpop\tac\n");
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
                 result->reg = "sb";
                 return result;
             }
             else if (var->is_array == true)
             { /* auto de-referencing case */
-                output += sprintf(output, "\tpush\tfp[%d]\n", i);
-                output += sprintf(output, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tfp[%d]\n", i);
+                head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
                 result->reg = "sb";
                 return result;
@@ -373,16 +381,11 @@ char *varlookup(nodeType *p)
         {
             if (t->offset == -1)
             {
-                // Need to add offset of arguments to ac
-                output += sprintf(output, "\tpush\tac\n");
-                output += sprintf(output, "\tpush\t%d\n", funcTable.functions[scope].prmtable.count);
-                output += sprintf(output, "\tadd\n");
-                output += sprintf(output, "\tpop\tac\n");
                 sprintf(r, "%s[%s]", t->reg, "ac"); /* fp[ac] */
             }
             else
             {
-                sprintf(r, "%s[%d]", t->reg, t->offset + funcTable.functions[scope].prmtable.count); /* fp[<offset>] */
+                sprintf(r, "%s[%d]", t->reg, t->offset); /* fp[<offset>] */
             }
             return r;
         }
@@ -424,7 +427,8 @@ char *varlookup(nodeType *p)
     newEntry->offset = table->width;
     table->count++;
     table->width++;
-    sprintf(r, "%s[%d]", scope == -1 ? "sb" : "fp", newEntry->offset);
+    int actual_offset = newEntry->offset + (scope == -1 ? 0 : funcTable.functions[scope].prmtable.count);
+    sprintf(r, "%s[%d]", scope == -1 ? "sb" : "fp", actual_offset);
     return r;
 }
 
