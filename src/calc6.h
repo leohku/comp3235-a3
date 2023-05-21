@@ -108,6 +108,7 @@ typedef struct {
 } tableSearchResult;
 
 extern char *output;
+extern char *output_start;
 extern char *wip;
 extern char *wip_start;
 extern varSymTable globalVarTable;

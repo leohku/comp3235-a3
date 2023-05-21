@@ -25,7 +25,7 @@ sub[1] = M[0, 1] * M[1, 2] * M[2, 0];
 sub[2] = M[0, 2] * M[1, 0] * M[2, 1];
 sub[3] = M[0, 2] * M[1, 1] * M[2, 0];
 sub[4] = M[0, 0] * M[1, 2] * M[2, 1];
-sub[5] = M[1, 0] * M[1, 0] * M[2, 2];
+sub[5] = M[0, 1] * M[1, 0] * M[2, 2];
 det = sub[0] + sub[1] + sub[2] - sub[3] - sub[4] - sub[5];
 puts_("The determinant of this matrix is: ");
 puti(det);

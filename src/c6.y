@@ -22,11 +22,6 @@ int ex(nodeType *p);
 int yylex(void);
 void yyerror(char *s);
 
-/* output buffers and pointers */
-char *output;
-char *output_start;
-char *wip;
-char *wip_start;
 %}
 
 %union {

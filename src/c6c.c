@@ -16,12 +16,19 @@ char *varlookup(nodeType *p);
 int arr_symgen(char *var, nodeType *p);
 int func_symgen(char *name, nodeType *p);
 
+/* output buffers and pointers */
+char *output;
+char *output_start;
+char *wip;
+char *wip_start;
+
 static int lbl = 0;
 static int scope = -1; /* -1: global scope, <num>: entry index in funcTable */
 
 int ex(nodeType *p)
 {
     int lblx, lbly, lbl1, lbl2;
+    char *rpos; /* register position */
 
     if (!p)
         return 0;
@@ -43,7 +50,8 @@ int ex(nodeType *p)
         break;
     case typeId:
     {
-        output += sprintf(output, "\tpush\t%s\n", varlookup(p));
+        rpos = varlookup(p);
+        output += sprintf(output, "\tpush\t%s\n", rpos);
     }
     break;
     case typeOpr:
@@ -105,15 +113,18 @@ int ex(nodeType *p)
             break;
         case GETI:
             output += sprintf(output, "\tgeti\n");
-            output += sprintf(output, "\tpop\t%s\n", varlookup(p->opr.op[0]));
+            rpos = varlookup(p->opr.op[0]);
+            output += sprintf(output, "\tpop\t%s\n", rpos);
             break;
         case GETC:
             output += sprintf(output, "\tgetc\n");
-            output += sprintf(output, "\tpop\t%s\n", varlookup(p->opr.op[0]));
+            rpos = varlookup(p->opr.op[0]);
+            output += sprintf(output, "\tpop\t%s\n", rpos);
             break;
         case GETS:
             output += sprintf(output, "\tgets\n");
-            output += sprintf(output, "\tpop\t%s\n", varlookup(p->opr.op[0]));
+            rpos = varlookup(p->opr.op[0]);
+            output += sprintf(output, "\tpop\t%s\n", rpos);
             break;
         case PUTI:
             ex(p->opr.op[0]);
@@ -141,7 +152,8 @@ int ex(nodeType *p)
             break;
         case '=':
             ex(p->opr.op[1]);
-            output += sprintf(output, "\tpop\t%s\n", varlookup(p->opr.op[0]));
+            rpos = varlookup(p->opr.op[0]);
+            output += sprintf(output, "\tpop\t%s\n", rpos);
             break;
         case UMINUS:
             ex(p->opr.op[0]);
