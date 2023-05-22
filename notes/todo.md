@@ -48,7 +48,9 @@ Development
                     [X] varlookup consumer refactoring to take register
                 [X] "var" generation and WIP buffer emission
                 [X] Output buffer switching depending on scope
-                [ ] Return behaviour (including ret with optional return value)
+                [X] Return behaviour (including ret with optional return value)
+                    [X] Lexing and parsing
+                    [X] Codegen
             [ ] Global variables denoted with "@"
                 [ ] Lexing and parsing
             [X] Expect global addresses for all array params (10%)

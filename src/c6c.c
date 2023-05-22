@@ -159,6 +159,16 @@ int ex(nodeType *p)
             ex(p->opr.op[0]);
             head += sprintf(head, "\tneg\n");
             break;
+        case RETURN:
+            if (scope == -1) {
+                fprintf(stderr, "Error: return statement outside function\n");
+                exit(1);
+            }
+            if (p->opr.op[0] != NULL) {
+                ex(p->opr.op[0]);
+            }
+            head += sprintf(head, "\tret\n");
+            break;
         default:
             ex(p->opr.op[0]);
             ex(p->opr.op[1]);

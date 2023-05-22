@@ -36,7 +36,7 @@ void yyerror(char *s);
 %token <sValue> STRING
 %token <sValue> VARIABLE
 %token FOR WHILE IF GETI GETC GETS PUTI PUTI_ PUTC PUTC_ PUTS PUTS_
-%token ARRAY FUNC
+%token ARRAY FUNC RETURN
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -83,6 +83,8 @@ stmt:
         | WHILE '(' expr ')' stmt                           { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX                    { $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt                    { $$ = opr(IF, 3, $3, $5, $7); }
+        | RETURN ';'                                        { $$ = opr(RETURN, 1, NULL); }
+        | RETURN expr ';'                                   { $$ = opr(RETURN, 1, $2); }
         | '{' stmt_list '}'                                 { $$ = $2; }
         ;
 

@@ -27,6 +27,7 @@ char* null_terminate(char* str);
 "puts_"         return PUTS_;
 "array"         return ARRAY;
 "func"          return FUNC;
+"return"        return RETURN;
 
 [a-zA-Z][a-zA-Z0-9]{0,19}       { 
                                     yylval.sValue = null_terminate(yytext);
@@ -62,12 +63,12 @@ char* null_terminate(char* str);
 "<="            return LE;
 "=="            return EQ;
 "!="            return NE;
-"&&"		return AND;
-"||"		return OR;
+"&&"		    return AND;
+"||"		    return OR;
 
-\/\/.*\n	;	/* skip comments */
+\/\/.*\n	    ;	/* skip comments */
 
-[ \t\n]+        ;       /* ignore whitespace */
+[ \t\n]+        ;   /* ignore whitespace */
 
 .               yyerror("Unknown character");
 %%

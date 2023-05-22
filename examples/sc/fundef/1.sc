@@ -6,5 +6,6 @@ func test(a,b,c) {
     puti(x);
     y = 6;
     puti(y);
+    return x;
 };
 y = 7;
