@@ -32,13 +32,13 @@ Development
     [X] geti, getc, gets n-d array support
     [ ] Multiple array declaration per line                     <- NOT DONE
 [ ] Functions decl and calls with no array as param (60%)
-    [ ] Function declaration site
+    [X] Function declaration site
         [X] Delayed emission (sprintf to two buffers)
         [X] Lexing and parsing
-        [ ] Code gen
+        [X] Code gen
             [X] Label shenanigans
             [X] Function symtable entry - name and params
-            [ ] Function body code gen
+            [X] Function body code gen
                 [X] Scope activation and deactivation
                 [X] varlookup & arr_symgen refactoring to support local scopes
                     [X] Create return structs for searchVarTable and searchPrmTable
@@ -51,8 +51,7 @@ Development
                 [X] Return behaviour (including ret with optional return value)
                     [X] Lexing and parsing
                     [X] Codegen
-            [ ] Global variables denoted with "@"
-                [ ] Lexing and parsing
+            [X] Global variables denoted with "@"
             [X] Expect global addresses for all array params (10%)
     [ ] Function calling site
         [ ] Lexing and parsing

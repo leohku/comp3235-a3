@@ -55,7 +55,7 @@ char* null_terminate(char* str);
                 return INTEGER;
             }
 
-[-()<>=+*/;{}\[\].,%] {
+[-()<>=+*/;{}\[\].,%@] {
                 return *yytext;
              }
 

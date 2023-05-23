@@ -366,8 +366,7 @@ char *varlookup(nodeType *p)
     tableSearchResult *t;
     char *r = malloc(20);
 
-    // TODO: Add or case to support @ syntax
-    if (scope == -1)
+    if (scope == -1 || p->id.has_global_decor)
     {
         t = searchVarTable(p, &globalVarTable, true);
         if (t->found)
@@ -430,15 +429,16 @@ char *varlookup(nodeType *p)
     }
 
     // Declare on first use
-    varSymTable *table = scope == -1 ? &globalVarTable : &funcTable.functions[scope].vartable;
+    bool use_global_table = scope == -1 || p->id.has_global_decor;
+    varSymTable *table = use_global_table ? &globalVarTable : &funcTable.functions[scope].vartable;
     varSymEntry *newEntry = &table->variables[table->count];
     newEntry->symbol = to_lower(p->id.name);
     newEntry->ndim = 0;
     newEntry->offset = table->width;
     table->count++;
     table->width++;
-    int actual_offset = newEntry->offset + (scope == -1 ? 0 : funcTable.functions[scope].prmtable.count);
-    sprintf(r, "%s[%d]", scope == -1 ? "sb" : "fp", actual_offset);
+    int actual_offset = newEntry->offset + (use_global_table ? 0 : funcTable.functions[scope].prmtable.count);
+    sprintf(r, "%s[%d]", use_global_table ? "sb" : "fp", actual_offset);
     return r;
 }
 

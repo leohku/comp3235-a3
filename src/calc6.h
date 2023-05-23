@@ -52,6 +52,7 @@ typedef struct {
 typedef struct {
     char *name;                     /* variable name */
     bool has_array_expr;            /* has array expression */
+    bool has_global_decor;          /* has global '@' decoration */
     struct nodeTypeTag *op;         /* array expressions */
 } idNodeType;
 

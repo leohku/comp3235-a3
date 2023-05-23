@@ -12,8 +12,8 @@ nodeType *are(nodeType *prev, nodeType *exp);
 nodeType *prm(nodeType *prev, nodeType *param);
 nodeType *func(char *name, nodeType *param, nodeType *body);
 nodeType *opr(int oper, int nops, ...);
-nodeType *id(char *value);
-nodeType *ida(char *value, nodeType *op);
+nodeType *id(bool global, char *value);
+nodeType *ida(bool global, char *value, nodeType *op);
 nodeType *conInt(int value);
 nodeType *conChar(char value);
 nodeType *conString(char *value);
@@ -47,7 +47,7 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list prm_list
+%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list prm_list var_invk
 
 %%
 
@@ -65,20 +65,16 @@ stmt:
           ';'                                               { $$ = opr(';', 2, NULL, NULL); }
         | expr ';'                                          { $$ = $1; }
         | array_decl ';'                                    { $$ = $1; }
-	    | GETI '(' VARIABLE ')' ';'		                    { $$ = opr(GETI, 1, id($3)); }
-        | GETI '(' VARIABLE '[' expr_list ']' ')' ';'	    { $$ = opr(GETI, 1, ida($3, $5)); }
-        | GETC '(' VARIABLE ')' ';'		                    { $$ = opr(GETC, 1, id($3)); }
-        | GETC '(' VARIABLE '[' expr_list ']' ')' ';'	    { $$ = opr(GETC, 1, ida($3, $5)); }
-        | GETS '(' VARIABLE ')' ';'		                    { $$ = opr(GETS, 1, id($3)); }
-        | GETS '(' VARIABLE '[' expr_list ']' ')' ';'	    { $$ = opr(GETS, 1, ida($3, $5)); }
+	    | GETI '(' var_invk ')' ';'		                    { $$ = opr(GETI, 1, $3); }
+        | GETC '(' var_invk ')' ';'		                    { $$ = opr(GETC, 1, $3); }
+        | GETS '(' var_invk ')' ';'		                    { $$ = opr(GETS, 1, $3); }
         | PUTI '(' expr ')' ';'		                        { $$ = opr(PUTI, 1, $3); }
         | PUTI_ '(' expr ')' ';'		                    { $$ = opr(PUTI_, 1, $3); }
         | PUTC '(' expr ')' ';'		                        { $$ = opr(PUTC, 1, $3); }
         | PUTC_ '(' expr ')' ';'		                    { $$ = opr(PUTC_, 1, $3); }
         | PUTS '(' expr ')' ';'		                        { $$ = opr(PUTS, 1, $3); }
         | PUTS_ '(' expr ')' ';'		                    { $$ = opr(PUTS_, 1, $3); }
-        | VARIABLE '=' expr ';'                             { $$ = opr('=', 2, id($1), $3); }
-        | VARIABLE '[' expr_list ']' '=' expr ';'           { $$ = opr('=', 2, ida($1, $3), $6); }
+        | var_invk '=' expr ';'                             { $$ = opr('=', 2, $1, $3); }
 	    | FOR '(' stmt stmt stmt ')' stmt                   { $$ = opr(FOR, 4, $3, $4, $5, $7); }
         | WHILE '(' expr ')' stmt                           { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX                    { $$ = opr(IF, 2, $3, $5); }
@@ -97,8 +93,7 @@ expr:
           INTEGER                                       { $$ = conInt($1); }
         | CHARACTER                                     { $$ = conChar($1); }
         | STRING                                        { $$ = conString($1); }
-        | VARIABLE                                      { $$ = id($1); }
-        | VARIABLE '[' expr_list ']'                    { $$ = ida($1, $3); }
+        | var_invk                                      { $$ = $1; }
         | '-' expr %prec UMINUS                         { $$ = opr(UMINUS, 1, $2); }
         | expr '+' expr                                 { $$ = opr('+', 2, $1, $3); }
         | expr '-' expr                                 { $$ = opr('-', 2, $1, $3); }
@@ -116,8 +111,8 @@ expr:
         | '(' expr ')'                                  { $$ = $2; }
         ;
 
-array_decl: ARRAY VARIABLE '[' int_list ']'             { $$ = opr(ARRAY, 2, id($2), $4); }
-        | ARRAY VARIABLE '[' int_list ']' '=' expr      { $$ = opr(ARRAY, 3, id($2), $4, $7); }
+array_decl: ARRAY VARIABLE '[' int_list ']'             { $$ = opr(ARRAY, 2, id(false, $2), $4); }
+        | ARRAY VARIABLE '[' int_list ']' '=' expr      { $$ = opr(ARRAY, 3, id(false, $2), $4, $7); }
         ;
 
 func_decl: FUNC VARIABLE '(' prm_list ')' '{' stmt_list '}' { $$ = func($2, $4, $7); }
@@ -132,11 +127,16 @@ expr_list: expr                                         { $$ = are(NULL, $1); }
         ;
 
 prm_list: /* NULL */                                    { $$ = prm(NULL, NULL); }
-        | VARIABLE                                      { $$ = prm(NULL, id($1)); }
-        | VARIABLE '[' ']'                              { $$ = prm(NULL, ida($1, NULL)); }
-        | prm_list ',' VARIABLE                         { $$ = prm($1, id($3)); }
-        | prm_list ',' VARIABLE '[' ']'                 { $$ = prm($1, ida($3, NULL)); }
+        | VARIABLE                                      { $$ = prm(NULL, id(false, $1)); }
+        | VARIABLE '[' ']'                              { $$ = prm(NULL, ida(false, $1, NULL)); }
+        | prm_list ',' VARIABLE                         { $$ = prm($1, id(false, $3)); }
+        | prm_list ',' VARIABLE '[' ']'                 { $$ = prm($1, ida(false, $3, NULL)); }
         ;
+
+var_invk: VARIABLE                                      { $$ = id(false, $1); }
+        | VARIABLE '[' expr_list ']'                    { $$ = ida(false, $1, $3); }
+        | '@' VARIABLE                                  { $$ = id(true, $2); }
+        | '@' VARIABLE '[' expr_list ']'                { $$ = ida(true, $2, $4); }
 
 %%
 
@@ -289,7 +289,7 @@ nodeType *conString(char *value) {
     return p;
 }
 
-nodeType *id(char *value) {
+nodeType *id(bool global, char *value) {
     nodeType *p;
     size_t nodeSize;
 
@@ -302,11 +302,12 @@ nodeType *id(char *value) {
     p->type = typeId;
     p->id.name = value;
     p->id.has_array_expr = false;
+    p->id.has_global_decor = global;    /* global: has global '@' decoration */
 
     return p;
 }
 
-nodeType *ida(char *value, nodeType *op) {
+nodeType *ida(bool global, char *value, nodeType *op) {
     nodeType *p;
     size_t nodeSize;
 
@@ -319,6 +320,7 @@ nodeType *ida(char *value, nodeType *op) {
     p->type = typeId;
     p->id.name = value;
     p->id.has_array_expr = true;
+    p->id.has_global_decor = global;    /* global: has global '@' decoration */
     p->id.op = op;
 
     return p;
