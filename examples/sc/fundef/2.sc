@@ -26,6 +26,7 @@ array x[3] = 2;
 n = 5;
 f(x);
 g(z);
+// g(z[1,1,1]); // z array dimension mismatch
 // g(x,n); // function g expects 1 arguments, but 2 given
 // f(n); // errors because n is not an array
 // f(m); // errors because array m is not found

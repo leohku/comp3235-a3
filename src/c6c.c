@@ -323,6 +323,11 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
                     fprintf(stderr, "%s is not an array\n", var->symbol);
                     exit(1);
                 }
+                if (p->id.op->are.ndim != var->ndim && p->id.op->are.ndim != 1)
+                {
+                    fprintf(stderr, "%s array dimension mismatch\n", var->symbol);
+                    exit(1);
+                }
                 head += sprintf(head, "\tpush\t%d\n", var->offset + param_offset);
                 for (int j = 0; j < p->id.op->are.ndim; j++)
                 {

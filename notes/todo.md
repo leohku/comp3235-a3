@@ -31,7 +31,7 @@ Development
         [X] Refactoring varlookup
     [X] geti, getc, gets n-d array support
     [ ] Multiple array declaration per line                     <- NOT DONE
-    [ ] Check array dimension during invokation
+    [X] Check array dimension during invokation
 [X] Functions decl and calls with no array as param (60%)
     [X] Function declaration site
         [X] Delayed emission (sprintf to two buffers)
