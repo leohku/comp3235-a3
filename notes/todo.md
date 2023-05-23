@@ -60,7 +60,7 @@ Development
         [X] Lexing and parsing
         [X] Codegen
             [X] Pass global address for all array params (10%)
-[ ] Global stack pointer dynamic allocation
+[X] Global stack pointer dynamic allocation
 [ ] Test suite
     [ ] Normal programs
     [ ] AST error cases

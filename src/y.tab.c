@@ -2262,13 +2262,13 @@ extern FILE* yyin;
     wip = malloc(sizeof(char) * 1000000);
     head = output_start;
 
-    // Stack pointer initialisation hack
-    head += sprintf(head, "\tpush\tsp\n");
-    head += sprintf(head, "\tpush\t3000\n");
-    head += sprintf(head, "\tadd\n");
-    head += sprintf(head, "\tpop\tsp\n");
-
     yyparse();
+
+    // Initialise global stack frame
+    printf("\tpush\tsp\n");
+    printf("\tpush\t%d\n", globalVarTable.width);
+    printf("\tadd\n");
+    printf("\tpop\tsp\n");
 
     // Print the output
     printf("%s", output_start);
