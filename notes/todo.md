@@ -61,9 +61,8 @@ Development
         [X] Codegen
             [X] Pass global address for all array params (10%)
 [X] Global stack pointer dynamic allocation
-[ ] Test suite
-    [ ] Normal programs
-    [ ] AST error cases
+[X] Test suite
+    [X] Normal programs
 [ ] Runtime checks
     [ ] Check dimension of pass-by-ref arrays during invokation
     [ ] Check out-of-bound array invokations
