@@ -226,9 +226,25 @@ int ex(nodeType *p)
                 head += sprintf(head, "\tmul\n");
                 break;
             case '/':
+                head += sprintf(head, "\tpush\tsp\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompEQ\n");
+                head += sprintf(head, "\tj1\tL990\n"); /* check for division by zero */
                 head += sprintf(head, "\tdiv\n");
                 break;
             case '%':
+                head += sprintf(head, "\tpush\tsp\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompEQ\n");
+                head += sprintf(head, "\tj1\tL990\n"); /* check for division by zero */
                 head += sprintf(head, "\tmod\n");
                 break;
             case '<':

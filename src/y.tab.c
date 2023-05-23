@@ -2273,5 +2273,17 @@ extern FILE* yyin;
     // Print the output
     printf("%s", output_start);
 
+    // Print runtime error labels
+    printf("\tjmp\tL999\n");
+    printf("L990:\n");
+    printf("\tputs\t\"Runtime Error: Division by zero.\\n\"\n");
+    printf("\tjmp\tL999\n");
+    printf("L991:\n");
+    printf("\tputs\t\"Runtime Error: Array index out of bounds.\\n\"\n");
+    printf("\tjmp\tL999\n");
+    printf("L992:\n");
+    printf("\tputs\t\"Runtime Error: Array dimension mismatch.\\n\"\n");
+    printf("L999:\n");
+
     return 0;
 }

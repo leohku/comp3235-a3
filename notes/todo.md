@@ -64,6 +64,9 @@ Development
 [X] Test suite
     [X] Normal programs
 [ ] Runtime checks
+    [X] Add runtime error message labels
+    [X] Check runtime division by zero
+    [ ] Check in-scope out-of-bound array access
+    [ ] Check pass-by-ref out-of-bound array access
     [ ] Check dimension of pass-by-ref arrays during invokation
-    [ ] Check out-of-bound array invokations
-    [ ] Support for n-d arrays as arguments using stack mirroring
+[ ] Support for n-d arrays as arguments using stack mirroring
