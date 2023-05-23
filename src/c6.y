@@ -413,6 +413,9 @@ extern FILE* yyin;
     printf("\tputs\t\"Runtime Error: Array index out of bounds.\\n\"\n");
     printf("\tjmp\tL999\n");
     printf("L992:\n");
+    printf("\tputs\t\"Runtime Error: Negative array index.\\n\"\n");
+    printf("\tjmp\tL999\n");
+    printf("L993:\n");
     printf("\tputs\t\"Runtime Error: Array dimension mismatch.\\n\"\n");
     printf("L999:\n");
 

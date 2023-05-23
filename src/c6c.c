@@ -10,6 +10,7 @@
 varSymTable globalVarTable;
 funcSymTable funcTable;
 char *to_lower(char *str);
+void copy_top_of_stack();
 tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_global);
 tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table);
 char *varlookup(nodeType *p);
@@ -226,22 +227,14 @@ int ex(nodeType *p)
                 head += sprintf(head, "\tmul\n");
                 break;
             case '/':
-                head += sprintf(head, "\tpush\tsp\n");
-                head += sprintf(head, "\tpush\t1\n");
-                head += sprintf(head, "\tsub\n");
-                head += sprintf(head, "\tpop\tac\n");
-                head += sprintf(head, "\tpush\tsb[ac]\n");
+                copy_top_of_stack();
                 head += sprintf(head, "\tpush\t0\n");
                 head += sprintf(head, "\tcompEQ\n");
                 head += sprintf(head, "\tj1\tL990\n"); /* check for division by zero */
                 head += sprintf(head, "\tdiv\n");
                 break;
             case '%':
-                head += sprintf(head, "\tpush\tsp\n");
-                head += sprintf(head, "\tpush\t1\n");
-                head += sprintf(head, "\tsub\n");
-                head += sprintf(head, "\tpop\tac\n");
-                head += sprintf(head, "\tpush\tsb[ac]\n");
+                copy_top_of_stack();
                 head += sprintf(head, "\tpush\t0\n");
                 head += sprintf(head, "\tcompEQ\n");
                 head += sprintf(head, "\tj1\tL990\n"); /* check for division by zero */
@@ -318,6 +311,14 @@ char *to_lower(char *str)
     return new_str;
 }
 
+void copy_top_of_stack() {
+    head += sprintf(head, "\tpush\tsp\n");
+    head += sprintf(head, "\tpush\t1\n");
+    head += sprintf(head, "\tsub\n");
+    head += sprintf(head, "\tpop\tac\n");
+    head += sprintf(head, "\tpush\tsb[ac]\n");
+}
+
 tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_global)
 {
     tableSearchResult *result = malloc(sizeof(tableSearchResult));
@@ -359,6 +360,17 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
                         head += sprintf(head, "\tadd\n");
                     }
                 }
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t%d\n", var->width);
+                head += sprintf(head, "\tcompGE\n");
+                head += sprintf(head, "\tj1\tL991\n"); /* check for +ve out of bounds */
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompLT\n");
+                head += sprintf(head, "\tj1\tL992\n"); /* check for -ve out of bounds */
+
                 head += sprintf(head, "\tadd\n");
                 head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
@@ -491,6 +503,7 @@ char *varlookup(nodeType *p)
     newEntry->symbol = to_lower(p->id.name);
     newEntry->ndim = 0;
     newEntry->offset = table->width;
+    newEntry->width = 1;
     table->count++;
     table->width++;
     int actual_offset = newEntry->offset + (use_global_table ? 0 : funcTable.functions[scope].prmtable.count);
@@ -586,6 +599,7 @@ int arr_symgen(char *var, nodeType *p)
     newEntry->ndim = p->ari.ndim;
     memcpy(newEntry->dims, p->ari.dims, sizeof(int) * p->ari.ndim);
     newEntry->offset = table->width;
+    newEntry->width = p->ari.width;
     table->count++;
     table->width += p->ari.width;
     return newEntry->offset;

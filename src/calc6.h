@@ -8,6 +8,7 @@ typedef struct {
     char *symbol;
     int ndim;                   /* 0 if variable, 1 or higher if array */
     int offset;
+    int width;
     int dims[10];
 } varSymEntry;
 
