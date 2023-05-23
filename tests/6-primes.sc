@@ -1,3 +1,6 @@
+// Interactive program to find first n prime numbers.
+// This demonstrates functions, and array IO.
+
 array primes[100];
 
 func isPrime(n) {

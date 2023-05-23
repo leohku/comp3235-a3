@@ -1,6 +1,7 @@
 #!/bin/bash
+# NOTE: Run this in the root directory of the project
 
-tests_passed = 0
+tests_passed=0
 num_of_tests=$(ls -1 ./tests/*.sc | wc -l | xargs)
 test_names=(
     "1-mergesort"
@@ -36,4 +37,5 @@ for ((i = 0; i < num_tests; i++)); do
     fi
 done
 
+echo
 echo "$tests_passed/$num_of_tests tests passed"

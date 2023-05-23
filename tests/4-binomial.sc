@@ -1,3 +1,6 @@
+// Dynamic programming algorithm to find the binomial coefficient given (n,k)
+// This demonstrates the '@' decorator, and multi-dimensional arrays.
+
 array dp[20, 20];
 
 func binomialCoefficient(n, k) {

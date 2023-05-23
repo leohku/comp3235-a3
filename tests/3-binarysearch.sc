@@ -1,3 +1,5 @@
+// Binary search on an array
+
 func binarySearch(arr[], low, high, target) {
     if (low <= high) {
         mid = low + (high - low) / 2;

@@ -1,9 +1,11 @@
+// Sorting an array using merge sort.
+// This demonstrates functions, and array as parameters in recursive settings
+
 func merge(arr[], start, mid, end) {
     n1 = mid - start + 1;
     n2 = end - mid;
 
-    array left[50];
-    array right[50];
+    array left[50], right[50];
 
     for (i = 0; i < n1; i = i + 1;) {
         left[i] = arr[start + i];

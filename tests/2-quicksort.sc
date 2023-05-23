@@ -1,3 +1,6 @@
+// Sorting an array using quick sort.
+// This demonstrates functions, and array as parameters in recursive settings.
+
 func partition(arr[], low, high) {
     pivot = arr[high];
     i = low - 1;

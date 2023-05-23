@@ -1,3 +1,6 @@
+// Dynamic programming algorithm to find the length of the longest increasing subsequence of 2 input arrays.
+// This demonstrates the '@' decorator, and multi-dimensional arrays.
+
 array dp[10, 10];
 
 func LIS(arr1[], size1, arr2[], size2) {
