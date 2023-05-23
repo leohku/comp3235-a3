@@ -47,7 +47,8 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list prm_list var_invk func_call
+%type <nPtr> stmt stmt_list expr array_decl func_decl int_list
+%type <nPtr> expr_list prm_list var_invk func_call array_decl_list array_decl_item
 
 %%
 
@@ -112,8 +113,15 @@ expr:
         | '(' expr ')'                                  { $$ = $2; }
         ;
 
-array_decl: ARRAY VARIABLE '[' int_list ']'             { $$ = opr(ARRAY, 2, id(false, $2), $4); }
-        | ARRAY VARIABLE '[' int_list ']' '=' expr      { $$ = opr(ARRAY, 3, id(false, $2), $4, $7); }
+array_decl: ARRAY array_decl_list                       { $$ = $2; }
+        ;
+
+array_decl_list: array_decl_item                        { $$ = $1; }
+        | array_decl_list ',' array_decl_item           { $$ = opr(';', 2, $1, $3); }
+        ;
+
+array_decl_item: VARIABLE '[' int_list ']'              { $$ = opr(ARRAY, 2, id(false, $1), $3); }
+        | VARIABLE '[' int_list ']' '=' expr            { $$ = opr(ARRAY, 3, id(false, $1), $3, $6); }
         ;
 
 func_decl: FUNC VARIABLE '(' prm_list ')' '{' stmt_list '}' { $$ = func($2, $4, $7); }

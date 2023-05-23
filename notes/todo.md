@@ -30,7 +30,7 @@ Development
         [X] Parsing
         [X] Refactoring varlookup
     [X] geti, getc, gets n-d array support
-    [ ] Multiple array declaration per line                     <- NOT DONE
+    [X] Multiple array declaration per line
     [X] Check array dimension during invokation
 [X] Functions decl and calls with no array as param (60%)
     [X] Function declaration site
@@ -60,6 +60,7 @@ Development
         [X] Lexing and parsing
         [X] Codegen
             [X] Pass global address for all array params (10%)
+[ ] Global stack pointer dynamic allocation
 [ ] Test suite
     [ ] Normal programs
     [ ] AST error cases
