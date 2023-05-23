@@ -31,6 +31,7 @@ typedef struct {
 /* function symtable */
 typedef struct {
     char *symbol;
+    int label;
     prmSymTable prmtable;
     varSymTable vartable;
 } funcSymEntry;
@@ -104,6 +105,7 @@ typedef struct nodeTypeTag {
 /* return type for table search */
 typedef struct {
     bool found;
+    bool is_array;
     char *reg;
     int offset;                 /* -1: in ac, else statically determined */
 } tableSearchResult;

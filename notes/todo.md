@@ -31,7 +31,8 @@ Development
         [X] Refactoring varlookup
     [X] geti, getc, gets n-d array support
     [ ] Multiple array declaration per line                     <- NOT DONE
-[ ] Functions decl and calls with no array as param (60%)
+    [ ] Check array dimension during invokation
+[X] Functions decl and calls with no array as param (60%)
     [X] Function declaration site
         [X] Delayed emission (sprintf to two buffers)
         [X] Lexing and parsing
@@ -52,11 +53,17 @@ Development
                     [X] Lexing and parsing
                     [X] Codegen
             [X] Global variables denoted with "@"
+                [X] No need to search global table in local scope by default
+            [X] Store label info in function table
             [X] Expect global addresses for all array params (10%)
-    [ ] Function calling site
-        [ ] Lexing and parsing
-        [ ] Pass global address for all array params (10%)
-    [ ] Support for n-d arrays as arguments using stack mirroring
+    [X] Function calling site
+        [X] Lexing and parsing
+        [X] Codegen
+            [X] Pass global address for all array params (10%)
 [ ] Test suite
     [ ] Normal programs
     [ ] AST error cases
+[ ] Runtime checks
+    [ ] Check dimension of pass-by-ref arrays during invokation
+    [ ] Check out-of-bound array invokations
+    [ ] Support for n-d arrays as arguments using stack mirroring

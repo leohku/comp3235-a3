@@ -36,7 +36,7 @@ void yyerror(char *s);
 %token <sValue> STRING
 %token <sValue> VARIABLE
 %token FOR WHILE IF GETI GETC GETS PUTI PUTI_ PUTC PUTC_ PUTS PUTS_
-%token ARRAY FUNC RETURN
+%token ARRAY FUNC RETURN CALL
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -47,7 +47,7 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list prm_list var_invk
+%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list prm_list var_invk func_call
 
 %%
 
@@ -94,6 +94,7 @@ expr:
         | CHARACTER                                     { $$ = conChar($1); }
         | STRING                                        { $$ = conString($1); }
         | var_invk                                      { $$ = $1; }
+        | func_call                                     { $$ = $1; }
         | '-' expr %prec UMINUS                         { $$ = opr(UMINUS, 1, $2); }
         | expr '+' expr                                 { $$ = opr('+', 2, $1, $3); }
         | expr '-' expr                                 { $$ = opr('-', 2, $1, $3); }
@@ -137,6 +138,10 @@ var_invk: VARIABLE                                      { $$ = id(false, $1); }
         | VARIABLE '[' expr_list ']'                    { $$ = ida(false, $1, $3); }
         | '@' VARIABLE                                  { $$ = id(true, $2); }
         | '@' VARIABLE '[' expr_list ']'                { $$ = ida(true, $2, $4); }
+
+func_call: VARIABLE '(' expr_list ')'                   { $$ = opr(CALL, 2, id(false, $1), $3); }
+        | '@' VARIABLE '(' expr_list ')'                { $$ = opr(CALL, 2, id(false, $2), $4); }
+        ;
 
 %%
 
@@ -382,7 +387,7 @@ extern FILE* yyin;
 
     // Stack pointer initialisation hack
     head += sprintf(head, "\tpush\tsp\n");
-    head += sprintf(head, "\tpush\t10000\n");
+    head += sprintf(head, "\tpush\t3000\n");
     head += sprintf(head, "\tadd\n");
     head += sprintf(head, "\tpop\tsp\n");
 
