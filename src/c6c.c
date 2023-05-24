@@ -714,11 +714,12 @@ bool constructSafetyStackFrameAtCompileTime(varSymTable *table, char *name)
         if (strcmp(table->variables[j].symbol, loweredName) == 0) {
             found = true;
             varSymEntry *var = &table->variables[j];
+            int skipped_dim_count = 0;
             for (int k = 0; k < SAFETY_FRAME_SIZE - 2; k++) {  /* pushing array info into the stack */
                 if (k < var->ndim) {
                     head += sprintf(head, "\tpush\t%d\n", var->dims[k]);
                 } else {
-                    head += sprintf(head, "\tpush\t0\n");
+                    skipped_dim_count++;
                 }
             }
             head += sprintf(head, "\tpush\t%d\n", var->width);
@@ -726,7 +727,20 @@ bool constructSafetyStackFrameAtCompileTime(varSymTable *table, char *name)
 
             head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);  /* popping info to safety frame */
             head += sprintf(head, "\tpop\tac\n");
-            for (int j = 0; j < SAFETY_FRAME_SIZE; j++) {
+            for (int j = 0; j < 2; j++) {   /* popping header */
+                head += sprintf(head, "\tpop\tsb[ac]\n");
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+            if (skipped_dim_count != 0) {   /* readjusting popping pointer */
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t%d\n", skipped_dim_count);
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+            for (int j = 0; j < SAFETY_FRAME_SIZE - 2 - skipped_dim_count; j++) {   /* popping dimensions */
                 head += sprintf(head, "\tpop\tsb[ac]\n");
                 head += sprintf(head, "\tpush\tac\n");
                 head += sprintf(head, "\tpush\t1\n");
