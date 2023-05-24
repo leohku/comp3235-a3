@@ -5,7 +5,6 @@
 #include <string.h>
 #include "calc6.h"
 
-
 /* prototypes */
 nodeType *ari(nodeType *prev, int value);
 nodeType *are(nodeType *prev, nodeType *exp);
@@ -400,6 +399,10 @@ extern FILE* yyin;
     printf("\tpush\t%d\n", globalVarTable.width);
     printf("\tadd\n");
     printf("\tpop\tsp\n");
+
+    // Initialise runtime safety stack pointer
+    printf("\tpush\t%d\n", STACK_CEIL - 1);
+    printf("\tpop\tsb[%d]\n", STACK_CEIL);
 
     // Print the output
     printf("%s", output_start);

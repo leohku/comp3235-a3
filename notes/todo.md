@@ -66,7 +66,13 @@ Development
 [ ] Runtime checks
     [X] Add runtime error message labels
     [X] Check runtime division by zero
-    [ ] Check in-scope out-of-bound array access
+    [X] Check in-scope out-of-bound array access
+    [X] Caller array info pushing
+        [X] In-scope (direct pushing)
+            [X] Global scope
+            [X] Local scope
+        [X] By-ref (popping and pushing)
+        [X] Stack teardown after call
     [ ] Check pass-by-ref out-of-bound array access
     [ ] Check dimension of pass-by-ref arrays during invokation
-[ ] Support for n-d arrays as arguments using stack mirroring
+    [ ] Support for n-d arrays as arguments using stack mirroring
