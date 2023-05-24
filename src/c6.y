@@ -46,8 +46,8 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl func_decl int_list
-%type <nPtr> expr_list prm_list var_invk func_call array_decl_list array_decl_item
+%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list expr_list_opt
+%type <nPtr> prm_list var_invk func_call array_decl_list array_decl_item
 
 %%
 
@@ -130,6 +130,10 @@ int_list: INTEGER                                       { $$ = ari(NULL, $1); }
         | int_list ',' INTEGER                          { $$ = ari($1, $3); }
         ;
 
+expr_list_opt: /* NULL */                               { $$ = are(NULL, NULL); }
+        | expr_list                                     { $$ = $1; }
+        ;
+
 expr_list: expr                                         { $$ = are(NULL, $1); }
         | expr_list ',' expr                            { $$ = are($1, $3); }
         ;
@@ -146,8 +150,8 @@ var_invk: VARIABLE                                      { $$ = id(false, $1); }
         | '@' VARIABLE                                  { $$ = id(true, $2); }
         | '@' VARIABLE '[' expr_list ']'                { $$ = ida(true, $2, $4); }
 
-func_call: VARIABLE '(' expr_list ')'                   { $$ = opr(CALL, 2, id(false, $1), $3); }
-        | '@' VARIABLE '(' expr_list ')'                { $$ = opr(CALL, 2, id(false, $2), $4); }
+func_call: VARIABLE '(' expr_list_opt ')'               { $$ = opr(CALL, 2, id(false, $1), $3); }
+        | '@' VARIABLE '(' expr_list_opt ')'            { $$ = opr(CALL, 2, id(false, $2), $4); }
         ;
 
 %%
@@ -196,13 +200,17 @@ nodeType *are(nodeType *prev, nodeType *exp) {
 
     /* copy information */
     p->type = typeAre;
-    if (prev == NULL) {
-        p->are.ndim = 1;
-        p->are.op[0] = exp;
+    if (exp == NULL) {
+        p->are.ndim = 0;
     } else {
-        p->are.ndim = prev->are.ndim + 1;
-        memcpy(p->are.op, prev->are.op, sizeof(nodeType *) * prev->are.ndim);
-        p->are.op[p->are.ndim - 1] = exp;
+        if (prev == NULL) {
+            p->are.ndim = 1;
+            p->are.op[0] = exp;
+        } else {
+            p->are.ndim = prev->are.ndim + 1;
+            memcpy(p->are.op, prev->are.op, sizeof(nodeType *) * prev->are.ndim);
+            p->are.op[p->are.ndim - 1] = exp;
+        }
     }
 
     return p;
