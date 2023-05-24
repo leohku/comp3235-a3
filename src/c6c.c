@@ -10,6 +10,7 @@
 varSymTable globalVarTable;
 funcSymTable funcTable;
 char *to_lower(char *str);
+void copy_top_of_stack();
 tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_global);
 tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table);
 char *varlookup(nodeType *p);
@@ -17,6 +18,8 @@ int func_index_lookup(char *name);
 int baselookup(nodeType *p);
 int arr_symgen(char *var, nodeType *p);
 int func_symgen(int label, char *name, nodeType *p);
+bool constructSafetyStackFrameAtCompileTime(varSymTable* table, char *name);
+bool constructSafetyStackFrameAtRuntime(prmSymTable *table, char *name);
 
 /* output buffers and pointers */
 char *head;
@@ -183,7 +186,7 @@ int ex(nodeType *p)
                         p->opr.op[0]->id.name, func->prmtable.count, p->opr.op[1]->are.ndim);
                 exit(1);
             }
-            for (int i = 0; i < p->opr.op[1]->are.ndim; i++)
+            for (int i = 0; i < p->opr.op[1]->are.ndim; i++)    /* prepare call stack */
             {
                 if (func->prmtable.parameters[i].is_array)
                 { /* pass by reference */
@@ -208,7 +211,32 @@ int ex(nodeType *p)
                     ex(p->opr.op[1]->are.op[i]);
                 }
             }
+
+            int number_of_array_args = 0;
+            for (int i = p->opr.op[1]->are.ndim - 1; i >= 0; i--) /* prepare safety stack */
+            {
+                if (func->prmtable.parameters[i].is_array)
+                {
+                    number_of_array_args++;
+                    nodeType *arg = p->opr.op[1]->are.op[i];    /* checked it is of typeId and has no array expressions previously */
+                    if (scope == -1 || arg->id.has_global_decor)
+                    {
+                        constructSafetyStackFrameAtCompileTime(&globalVarTable, arg->id.name);
+                    } else {
+                        bool done = constructSafetyStackFrameAtCompileTime(&funcTable.functions[scope].vartable, arg->id.name);
+                        if (!done) {
+                            constructSafetyStackFrameAtRuntime(&func->prmtable, arg->id.name);
+                        }
+                    }
+                }
+            }
+
             head += sprintf(head, "\tcall\tL%03d\n", func->label);
+
+            head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+            head += sprintf(head, "\tpush\t%d\n", number_of_array_args * SAFETY_FRAME_SIZE);
+            head += sprintf(head, "\tadd\n");
+            head += sprintf(head, "\tpop\tsb[%d]\n", STACK_CEIL); /* safety frames teardown */
         }
         break;
         default:
@@ -226,9 +254,17 @@ int ex(nodeType *p)
                 head += sprintf(head, "\tmul\n");
                 break;
             case '/':
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompEQ\n");
+                head += sprintf(head, "\tj1\tL990\n"); /* check for division by zero */
                 head += sprintf(head, "\tdiv\n");
                 break;
             case '%':
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompEQ\n");
+                head += sprintf(head, "\tj1\tL990\n"); /* check for division by zero */
                 head += sprintf(head, "\tmod\n");
                 break;
             case '<':
@@ -302,6 +338,14 @@ char *to_lower(char *str)
     return new_str;
 }
 
+void copy_top_of_stack() {
+    head += sprintf(head, "\tpush\tsp\n");
+    head += sprintf(head, "\tpush\t1\n");
+    head += sprintf(head, "\tsub\n");
+    head += sprintf(head, "\tpop\tac\n");
+    head += sprintf(head, "\tpush\tsb[ac]\n");
+}
+
 tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_global)
 {
     tableSearchResult *result = malloc(sizeof(tableSearchResult));
@@ -343,6 +387,17 @@ tableSearchResult *searchVarTable(nodeType *p, varSymTable *table, bool is_globa
                         head += sprintf(head, "\tadd\n");
                     }
                 }
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t%d\n", var->width);
+                head += sprintf(head, "\tcompGE\n");
+                head += sprintf(head, "\tj1\tL991\n"); /* check for +ve out of bounds */
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompLT\n");
+                head += sprintf(head, "\tj1\tL992\n"); /* check for -ve out of bounds */
+
                 head += sprintf(head, "\tadd\n");
                 head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
@@ -363,9 +418,11 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
     tableSearchResult *result = malloc(sizeof(tableSearchResult));
 
     char *loweredVar = to_lower(p->id.name);
+    int array_index = -1;
     for (int i = 0; i < table->count; i++)
     {
         prmSymEntry *var = &table->parameters[i];
+        if (var->is_array) array_index++;
         if (strcmp(var->symbol, loweredVar) == 0)
         {
             result->found = true;
@@ -377,13 +434,59 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
                     fprintf(stderr, "%s is not an array\n", var->symbol);
                     exit(1);
                 }
-                if (p->id.op->are.ndim != 1)
-                {
-                    fprintf(stderr, "n-d array indexing not supported for parameters yet\n");
-                    exit(1);
-                }
+
+                int lbl_pass = lbl++;
+                head += sprintf(head, "\tpush\t%d\n", p->id.op->are.ndim);
+                head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+                head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 12);
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tcompEQ\n");    /* compare with dimension in safety stack */
+                head += sprintf(head, "\tj1\tL%03d\n", lbl_pass);
+
+                head += sprintf(head, "\tpush\t%d\n", p->id.op->are.ndim);
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tcompEQ\n");
+                head += sprintf(head, "\tj1\tL%03d\n", lbl_pass); /* compare with 1 */
+                head += sprintf(head, "\tjmp\tL993\n"); /* array dimension mismatch found */
+
+                head += sprintf(head, "L%03d:\n", lbl_pass);
                 head += sprintf(head, "\tpush\tfp[%d]\n", i);
-                ex(p->id.op->are.op[0]);
+                for (int j = 0; j < p->id.op->are.ndim; j++)
+                {
+                    if (j == 0)
+                    {
+                        ex(p->id.op->are.op[j]);
+                    }
+                    else
+                    {
+                        head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+                        head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 1 + j);
+                        head += sprintf(head, "\tadd\n");
+                        head += sprintf(head, "\tpop\tac\n");
+                        head += sprintf(head, "\tpush\tsb[ac]\n");  /* get dimension size */
+                        
+                        head += sprintf(head, "\tmul\n");
+                        ex(p->id.op->are.op[j]);
+                        head += sprintf(head, "\tadd\n");
+                    }
+                }
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+                head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 11);
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tcompGE\n");
+                head += sprintf(head, "\tj1\tL991\n"); /* check for +ve out of bounds */
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompLT\n");
+                head += sprintf(head, "\tj1\tL992\n"); /* check for -ve out of bounds */
+
                 head += sprintf(head, "\tadd\n");
                 head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
@@ -475,6 +578,7 @@ char *varlookup(nodeType *p)
     newEntry->symbol = to_lower(p->id.name);
     newEntry->ndim = 0;
     newEntry->offset = table->width;
+    newEntry->width = 1;
     table->count++;
     table->width++;
     int actual_offset = newEntry->offset + (use_global_table ? 0 : funcTable.functions[scope].prmtable.count);
@@ -570,6 +674,7 @@ int arr_symgen(char *var, nodeType *p)
     newEntry->ndim = p->ari.ndim;
     memcpy(newEntry->dims, p->ari.dims, sizeof(int) * p->ari.ndim);
     newEntry->offset = table->width;
+    newEntry->width = p->ari.width;
     table->count++;
     table->width += p->ari.width;
     return newEntry->offset;
@@ -599,4 +704,95 @@ int func_symgen(int label, char *name, nodeType *p)
     }
     funcTable.count++;
     return funcTable.count - 1;
+}
+
+bool constructSafetyStackFrameAtCompileTime(varSymTable *table, char *name)
+{
+    bool found = false;
+    char *loweredName = to_lower(name);
+    for (int j = 0; j < table->count; j++) {
+        if (strcmp(table->variables[j].symbol, loweredName) == 0) {
+            found = true;
+            varSymEntry *var = &table->variables[j];
+            int skipped_dim_count = 0;
+            for (int k = 0; k < SAFETY_FRAME_SIZE - 2; k++) {  /* pushing array info into the stack */
+                if (k < var->ndim) {
+                    head += sprintf(head, "\tpush\t%d\n", var->dims[k]);
+                } else {
+                    skipped_dim_count++;
+                }
+            }
+            head += sprintf(head, "\tpush\t%d\n", var->width);
+            head += sprintf(head, "\tpush\t%d\n", var->ndim);
+
+            head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);  /* popping info to safety frame */
+            head += sprintf(head, "\tpop\tac\n");
+            for (int j = 0; j < 2; j++) {   /* popping header */
+                head += sprintf(head, "\tpop\tsb[ac]\n");
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+            if (skipped_dim_count != 0) {   /* readjusting popping pointer */
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t%d\n", skipped_dim_count);
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+            for (int j = 0; j < SAFETY_FRAME_SIZE - 2 - skipped_dim_count; j++) {   /* popping dimensions */
+                head += sprintf(head, "\tpop\tsb[ac]\n");
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+            head += sprintf(head, "\tpush\tac\n");
+            head += sprintf(head, "\tpop\tsb[%d]\n", STACK_CEIL);
+            break;
+        }
+    }
+    return found;
+}
+
+bool constructSafetyStackFrameAtRuntime(prmSymTable *table, char *name)
+{
+    char *loweredName = to_lower(name);
+    bool found = false;
+    int array_index = -1;   /* index in parameter table, only considering arrays */
+    for (int i = 0; i < table->count; i++) {
+        if (table->parameters[i].is_array) array_index++;
+        if (strcmp(table->parameters[i].symbol, loweredName) == 0) {
+            found = true;
+
+            head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+            head += sprintf(head, "\tpop\tac\n");
+            head += sprintf(head, "\tpush\tac\n");
+            head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 1);
+            head += sprintf(head, "\tadd\n");
+            head += sprintf(head, "\tpop\tac\n"); /* prepare read head from the safety stack */
+
+            for (int i = 0; i < SAFETY_FRAME_SIZE; i++) {  /* read from safety stack */
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+
+            head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);  /* popping info to new safety frame */
+            head += sprintf(head, "\tpop\tac\n");
+            for (int j = 0; j < SAFETY_FRAME_SIZE; j++) {
+                head += sprintf(head, "\tpop\tsb[ac]\n");
+                head += sprintf(head, "\tpush\tac\n");
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tsub\n");
+                head += sprintf(head, "\tpop\tac\n");
+            }
+            head += sprintf(head, "\tpush\tac\n");
+            head += sprintf(head, "\tpop\tsb[%d]\n", STACK_CEIL);
+            break;
+        }
+    }
+    return found;
 }

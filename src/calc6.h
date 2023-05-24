@@ -1,5 +1,8 @@
 #include <stdbool.h>
 
+#define STACK_CEIL (20000-1)   /* maximum stack index */
+#define SAFETY_FRAME_SIZE 12   /* size of safety frame */
+
 typedef enum { typeCon, typeId, typeOpr, typeAri, typeAre, typePrm, typeFunc } nodeEnum;
 typedef enum { conTypeInt, conTypeChar, conTypeString } conTypeEnum;
 
@@ -8,6 +11,7 @@ typedef struct {
     char *symbol;
     int ndim;                   /* 0 if variable, 1 or higher if array */
     int offset;
+    int width;
     int dims[10];
 } varSymEntry;
 

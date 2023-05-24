@@ -63,7 +63,16 @@ Development
 [X] Global stack pointer dynamic allocation
 [X] Test suite
     [X] Normal programs
-[ ] Runtime checks
-    [ ] Check dimension of pass-by-ref arrays during invokation
-    [ ] Check out-of-bound array invokations
-    [ ] Support for n-d arrays as arguments using stack mirroring
+[X] Runtime checks
+    [X] Add runtime error message labels
+    [X] Check runtime division by zero
+    [X] Check in-scope out-of-bound array access
+    [X] Caller array info pushing
+        [X] In-scope (direct pushing)
+            [X] Global scope
+            [X] Local scope
+        [X] By-ref (popping and pushing)
+        [X] Stack teardown after call
+    [X] Check pass-by-ref out-of-bound array access
+    [X] Support for n-d arrays as arguments using stack mirroring
+    [X] Check dimension of pass-by-ref arrays during invokation

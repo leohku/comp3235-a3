@@ -5,7 +5,6 @@
 #include <string.h>
 #include "calc6.h"
 
-
 /* prototypes */
 nodeType *ari(nodeType *prev, int value);
 nodeType *are(nodeType *prev, nodeType *exp);
@@ -47,8 +46,8 @@ void yyerror(char *s);
 %left '*' '/' '%'
 %nonassoc UMINUS
 
-%type <nPtr> stmt stmt_list expr array_decl func_decl int_list
-%type <nPtr> expr_list prm_list var_invk func_call array_decl_list array_decl_item
+%type <nPtr> stmt stmt_list expr array_decl func_decl int_list expr_list expr_list_opt
+%type <nPtr> prm_list var_invk func_call array_decl_list array_decl_item
 
 %%
 
@@ -131,6 +130,10 @@ int_list: INTEGER                                       { $$ = ari(NULL, $1); }
         | int_list ',' INTEGER                          { $$ = ari($1, $3); }
         ;
 
+expr_list_opt: /* NULL */                               { $$ = are(NULL, NULL); }
+        | expr_list                                     { $$ = $1; }
+        ;
+
 expr_list: expr                                         { $$ = are(NULL, $1); }
         | expr_list ',' expr                            { $$ = are($1, $3); }
         ;
@@ -147,8 +150,8 @@ var_invk: VARIABLE                                      { $$ = id(false, $1); }
         | '@' VARIABLE                                  { $$ = id(true, $2); }
         | '@' VARIABLE '[' expr_list ']'                { $$ = ida(true, $2, $4); }
 
-func_call: VARIABLE '(' expr_list ')'                   { $$ = opr(CALL, 2, id(false, $1), $3); }
-        | '@' VARIABLE '(' expr_list ')'                { $$ = opr(CALL, 2, id(false, $2), $4); }
+func_call: VARIABLE '(' expr_list_opt ')'               { $$ = opr(CALL, 2, id(false, $1), $3); }
+        | '@' VARIABLE '(' expr_list_opt ')'            { $$ = opr(CALL, 2, id(false, $2), $4); }
         ;
 
 %%
@@ -157,7 +160,10 @@ func_call: VARIABLE '(' expr_list ')'                   { $$ = opr(CALL, 2, id(f
 
 nodeType *ari(nodeType *prev, int value) {
     if (value <= 0)
-        yyerror("illegal array size");
+    {
+        fprintf(stderr, "illegal array dimension value\n");
+        exit(1);
+    }
 
     nodeType *p;
     size_t nodeSize;
@@ -194,13 +200,17 @@ nodeType *are(nodeType *prev, nodeType *exp) {
 
     /* copy information */
     p->type = typeAre;
-    if (prev == NULL) {
-        p->are.ndim = 1;
-        p->are.op[0] = exp;
+    if (exp == NULL) {
+        p->are.ndim = 0;
     } else {
-        p->are.ndim = prev->are.ndim + 1;
-        memcpy(p->are.op, prev->are.op, sizeof(nodeType *) * prev->are.ndim);
-        p->are.op[p->are.ndim - 1] = exp;
+        if (prev == NULL) {
+            p->are.ndim = 1;
+            p->are.op[0] = exp;
+        } else {
+            p->are.ndim = prev->are.ndim + 1;
+            memcpy(p->are.op, prev->are.op, sizeof(nodeType *) * prev->are.ndim);
+            p->are.op[p->are.ndim - 1] = exp;
+        }
     }
 
     return p;
@@ -374,7 +384,10 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    head += sprintf(head, "%s\n", s);
+    printf("yyparse output in progress:\n");
+    printf("%s", output_start); /* print output before quitting */
+    fprintf(stderr, "%s\n", s);
+    exit(1);
 }
 
 int main(int argc, char **argv) {
@@ -401,8 +414,27 @@ extern FILE* yyin;
     printf("\tadd\n");
     printf("\tpop\tsp\n");
 
+    // Initialise runtime safety stack pointer
+    printf("\tpush\t%d\n", STACK_CEIL - 1);
+    printf("\tpop\tsb[%d]\n", STACK_CEIL);
+
     // Print the output
     printf("%s", output_start);
+
+    // Print runtime error labels
+    printf("\tjmp\tL999\n");
+    printf("L990:\n");
+    printf("\tputs\t\"Runtime Error: Division by zero.\\n\"\n");
+    printf("\tjmp\tL999\n");
+    printf("L991:\n");
+    printf("\tputs\t\"Runtime Error: Array index out of bounds.\\n\"\n");
+    printf("\tjmp\tL999\n");
+    printf("L992:\n");
+    printf("\tputs\t\"Runtime Error: Negative array index.\\n\"\n");
+    printf("\tjmp\tL999\n");
+    printf("L993:\n");
+    printf("\tputs\t\"Runtime Error: Array dimension mismatch.\\n\"\n");
+    printf("L999:\n");
 
     return 0;
 }

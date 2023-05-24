@@ -10,6 +10,8 @@ test_names=(
     "4-binomial"
     "5-lis"
     "6-primes"
+    "7-ndarrays"
+    "8-runtime-errors"
     )
 expected_outputs=(
     "1 2 3 4 5 6 7 8 "
@@ -18,6 +20,8 @@ expected_outputs=(
     "252"
     "2"
     "Find first n prime numbers (max 100): The first 10 prime numbers are: 2 3 5 7 11 13 17 19 23 29 "
+    "30"
+    "Runtime Error: Array index out of bounds."
     )
 
 num_tests=${#test_names[@]}
