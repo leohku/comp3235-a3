@@ -2025,7 +2025,10 @@ yyreturnlab:
 
 nodeType *ari(nodeType *prev, int value) {
     if (value <= 0)
-        yyerror("illegal array size");
+    {
+        fprintf(stderr, "illegal array dimension value\n");
+        exit(1);
+    }
 
     nodeType *p;
     size_t nodeSize;
@@ -2242,7 +2245,10 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    head += sprintf(head, "%s\n", s);
+    printf("yyparse output in progress:\n");
+    printf("%s", output_start); /* print output before quitting */
+    fprintf(stderr, "%s\n", s);
+    exit(1);
 }
 
 int main(int argc, char **argv) {

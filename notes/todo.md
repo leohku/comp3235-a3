@@ -32,7 +32,6 @@ Development
     [X] geti, getc, gets n-d array support
     [X] Multiple array declaration per line
     [X] Check array dimension during invokation
-    [ ] Cannot declare an array of size 0           <-- NOT DONE
 [X] Functions decl and calls with no array as param (60%)
     [X] Function declaration site
         [X] Delayed emission (sprintf to two buffers)
@@ -64,7 +63,7 @@ Development
 [X] Global stack pointer dynamic allocation
 [X] Test suite
     [X] Normal programs
-[ ] Runtime checks
+[X] Runtime checks
     [X] Add runtime error message labels
     [X] Check runtime division by zero
     [X] Check in-scope out-of-bound array access
@@ -75,5 +74,5 @@ Development
         [X] By-ref (popping and pushing)
         [X] Stack teardown after call
     [X] Check pass-by-ref out-of-bound array access
-    [ ] Support for n-d arrays as arguments using stack mirroring
-    [ ] Check dimension of pass-by-ref arrays during invokation
+    [X] Support for n-d arrays as arguments using stack mirroring
+    [X] Check dimension of pass-by-ref arrays during invokation

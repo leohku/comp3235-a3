@@ -434,13 +434,44 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
                     fprintf(stderr, "%s is not an array\n", var->symbol);
                     exit(1);
                 }
-                if (p->id.op->are.ndim != 1)
-                {
-                    fprintf(stderr, "n-d array indexing not supported for parameters yet\n");
-                    exit(1);
-                }
+
+                int lbl_pass = lbl++;
+                head += sprintf(head, "\tpush\t%d\n", p->id.op->are.ndim);
+                head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+                head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 12);
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tcompEQ\n");    /* compare with dimension in safety stack */
+                head += sprintf(head, "\tj1\tL%03d\n", lbl_pass);
+
+                head += sprintf(head, "\tpush\t%d\n", p->id.op->are.ndim);
+                head += sprintf(head, "\tpush\t1\n");
+                head += sprintf(head, "\tcompEQ\n");
+                head += sprintf(head, "\tj1\tL%03d\n", lbl_pass); /* compare with 1 */
+                head += sprintf(head, "\tjmp\tL993\n"); /* array dimension mismatch found */
+
+                head += sprintf(head, "L%03d:\n", lbl_pass);
                 head += sprintf(head, "\tpush\tfp[%d]\n", i);
-                ex(p->id.op->are.op[0]);
+                for (int j = 0; j < p->id.op->are.ndim; j++)
+                {
+                    if (j == 0)
+                    {
+                        ex(p->id.op->are.op[j]);
+                    }
+                    else
+                    {
+                        head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+                        head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 1 + j);
+                        head += sprintf(head, "\tadd\n");
+                        head += sprintf(head, "\tpop\tac\n");
+                        head += sprintf(head, "\tpush\tsb[ac]\n");  /* get dimension size */
+                        
+                        head += sprintf(head, "\tmul\n");
+                        ex(p->id.op->are.op[j]);
+                        head += sprintf(head, "\tadd\n");
+                    }
+                }
 
                 copy_top_of_stack();
                 head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
