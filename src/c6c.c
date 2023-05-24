@@ -418,9 +418,11 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
     tableSearchResult *result = malloc(sizeof(tableSearchResult));
 
     char *loweredVar = to_lower(p->id.name);
+    int array_index = -1;
     for (int i = 0; i < table->count; i++)
     {
         prmSymEntry *var = &table->parameters[i];
+        if (var->is_array) array_index++;
         if (strcmp(var->symbol, loweredVar) == 0)
         {
             result->found = true;
@@ -439,6 +441,21 @@ tableSearchResult *searchPrmTable(nodeType *p, prmSymTable *table)
                 }
                 head += sprintf(head, "\tpush\tfp[%d]\n", i);
                 ex(p->id.op->are.op[0]);
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\tsb[%d]\n", STACK_CEIL);
+                head += sprintf(head, "\tpush\t%d\n", array_index * SAFETY_FRAME_SIZE + 11);
+                head += sprintf(head, "\tadd\n");
+                head += sprintf(head, "\tpop\tac\n");
+                head += sprintf(head, "\tpush\tsb[ac]\n");
+                head += sprintf(head, "\tcompGE\n");
+                head += sprintf(head, "\tj1\tL991\n"); /* check for +ve out of bounds */
+
+                copy_top_of_stack();
+                head += sprintf(head, "\tpush\t0\n");
+                head += sprintf(head, "\tcompLT\n");
+                head += sprintf(head, "\tj1\tL992\n"); /* check for -ve out of bounds */
+
                 head += sprintf(head, "\tadd\n");
                 head += sprintf(head, "\tpop\tac\n");
                 result->offset = -1; /* offset dynamically calculated */
